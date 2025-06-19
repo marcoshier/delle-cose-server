@@ -5,7 +5,7 @@ import java.io.File
 
 class LocalService: DataProvider {
 
-    val file = File("data/14-06-2025.csv")
+    val file = File("data/unserialized.csv")
 
     override fun getDataWithHeaders(): List<Map<String, String>> {
         return csvReader().readAllWithHeader(file)

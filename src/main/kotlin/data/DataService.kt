@@ -1,5 +1,7 @@
 package com.marcoshier.data
 
+import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
+import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import com.marcoshier.services.RefreshService
 import com.marcoshier.types.Author
 import com.marcoshier.types.Category
@@ -43,6 +45,24 @@ class DataService {
     private fun fetchAndSerialize(): Data {
 
         val dataMap = provider.getDataWithHeaders()
+
+        if (!dataMap.isEmpty() && !dataMap[0].isEmpty()) {
+            val deserializedFile = File("data/unserialized.csv")
+
+            if (!deserializedFile.exists()) {
+                deserializedFile.createNewFile()
+            }
+
+            csvWriter().open(deserializedFile) {
+                val headers = dataMap.first().keys.toList()
+                writeRow(headers)
+
+                dataMap.forEach { row ->
+                    val values = headers.map { header -> row[header] ?: "" }
+                    writeRow(values)
+                }
+            }
+        }
 
 
         val projectNames = mutableListOf<String>()
@@ -130,15 +150,15 @@ class DataService {
         val result = Data(projects, authors, categories)
 
         val jsonText = json.encodeToString(Data.serializer(), result)
-        val file = File("data/serialized.json")
+        val serializedFile = File("data/serialized.json")
 
-        if (file.exists()) {
-            val text = file.readText()
+        if (serializedFile.exists()) {
+            val text = serializedFile.readText()
             if (text.hashCode() != jsonText.hashCode()) {
-                file.writeText(jsonText)
+                serializedFile.writeText(jsonText)
             }
         } else {
-            file.writeText(jsonText)
+            serializedFile.writeText(jsonText)
         }
 
         return result
