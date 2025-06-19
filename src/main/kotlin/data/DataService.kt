@@ -2,6 +2,7 @@ package com.marcoshier.data
 
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
+import com.marcoshier.lib.findMatch
 import com.marcoshier.services.RefreshService
 import com.marcoshier.types.Author
 import com.marcoshier.types.Category
@@ -171,5 +172,28 @@ class DataService {
 
 
     var data = init()
+
+
+    /** Getters */
+
+    val projects: List<String>
+        get() = data.projects.map { it.name }
+
+    val authors: List<String>
+        get() = data.authors.map { it.name }
+
+    val categories: List<String>
+        get() = data.categories.map { it.name }
+
+
+    fun getProject(name: String): Project? {
+        val p = findMatch(projects, name)
+        return data.projects.find { it.name == p }
+    }
+
+    fun getAuthor(name: String): Author? {
+        val a = findMatch(authors, name)
+        return data.authors.find { it.name == a }
+    }
 
 }
