@@ -2,26 +2,26 @@ package com.marcoshier.components
 
 import java.io.File
 
-fun galleryComponent(folder: File, mediaFiles: List<File>, imageCount: Int, videoCount: Int, mediaComponents: String) = """
+fun galleryComponent(projectName: String, mediaFiles: List<File>, imageCount: Int, videoCount: Int, mediaComponents: String) = """
         <!DOCTYPE html>
         <html>
         <head>
-            <title>Media Gallery - ${folder.name}</title>
+            <title>Gallery - ${projectName}</title>
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <style>
                 body {
-                    font-family: Arial, sans-serif;
+                    font-family: monospace;
                     margin: 0;
                     padding: 20px;
                     background-color: #f5f5f5;
                 }
                 .container {
-                    max-width: 1200px;
+                    max-width: 90vw;
                     margin: 0 auto;
                 }
                 h1 {
                     text-align: center;
-                    color: #333;
+                    color: #000;
                     margin-bottom: 30px;
                 }
                 .media-item {
@@ -29,7 +29,6 @@ fun galleryComponent(folder: File, mediaFiles: List<File>, imageCount: Int, vide
                     background: white;
                     padding: 20px;
                     border-radius: 8px;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                 }
                 .media-title {
                     font-size: 18px;
@@ -60,16 +59,15 @@ fun galleryComponent(folder: File, mediaFiles: List<File>, imageCount: Int, vide
                     padding: 15px;
                     background: white;
                     border-radius: 8px;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                 }
             </style>
         </head>
         <body>
             <div class="container">
-                <h1>Media Gallery: ${folder.name}</h1>
+                <h1>Media / ${projectName}</h1>
                 <div class="stats">
-                    <strong>Total Files:</strong> ${mediaFiles.size} 
-                    (<strong>Images:</strong> $imageCount, <strong>Videos:</strong> $videoCount)
+                    <strong>Totale File:</strong> ${mediaFiles.size} 
+                    (<strong>Immagini:</strong> $imageCount, <strong>Video:</strong> $videoCount)
                 </div>
                 $mediaComponents
             </div>

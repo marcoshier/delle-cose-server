@@ -7,6 +7,8 @@ import io.ktor.server.response.respondRedirect
 import io.ktor.server.routing.RoutingContext
 import kotlinx.serialization.Serializable
 import java.io.File
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import kotlin.math.log
 
 private val logger = KotlinLogging.logger { }
@@ -35,10 +37,10 @@ fun File.getMediaType(): String? {
 }
 
 suspend fun RoutingContext.mediaManifest(folderPath: String) {
-    val folder = File(folderPath)
+    val folder = File(folderPath.drop(1))
 
     if (!folder.exists() || !folder.isDirectory) {
-        logger.info { "Folder does not exist or is not a directory: $folderPath" }
+        logger.info { "Manifest: Folder does not exist or is not a directory: $folderPath" }
         call.respondRedirect("/404")
         return
     }
@@ -49,8 +51,13 @@ suspend fun RoutingContext.mediaManifest(folderPath: String) {
                 file.isFile && (file.isImageFile() || file.isVideoFile())
             }
             ?.map { file ->
+
+                val encodedFileName = URLEncoder.encode(file.name, StandardCharsets.UTF_8)
+                val encodedFolderName = URLEncoder.encode(folder.name, StandardCharsets.UTF_8)
+                val fullUrl = "$encodedFolderName/$encodedFileName"
+
                 MediaFile(
-                    path = file.absolutePath,
+                    path = fullUrl,
                     type = file.getMediaType() ?: "unknown"
                 )
             } ?: emptyList()

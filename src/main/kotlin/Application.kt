@@ -1,6 +1,7 @@
 package com.marcoshier
 
 import com.marcoshier.components.galleryComponent
+import com.marcoshier.components.logger
 import com.marcoshier.data.DataService
 import com.marcoshier.lib.findMatch
 import com.marcoshier.media.gallery
@@ -15,6 +16,8 @@ import io.ktor.server.request.receiveText
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import java.io.File
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
 
 fun main(args: Array<String>) {
@@ -94,7 +97,7 @@ fun Application.module() {
                     return@get
                 }
 
-                gallery("/media/$dirName")
+                gallery(project.name, "/media/$dirName")
             }
         }
 
@@ -116,7 +119,7 @@ fun Application.module() {
             }
         }
 
-        get("/photos/{query}") {
+        get("/images/{query}") {
             val projectName = call.parameters["query"]
             val project = projectName?.let { dataService.getProject(projectName) }
 
@@ -130,7 +133,7 @@ fun Application.module() {
                     return@get
                 }
 
-                gallery("/media/$dirName", photos = true, videos = false)
+                gallery(project.name, "/media/$dirName", photos = true, videos = false)
             }
         }
 
@@ -148,41 +151,51 @@ fun Application.module() {
                     return@get
                 }
 
-                gallery("/media/$dirName", photos = false, videos = true)
+                gallery(project.name, "/media/$dirName", photos = false, videos = true)
             }
         }
 
-        get("/video/{query}") {
-            val path = call.parameters["query"]
 
-            if (path == null) {
-                call.respond("Not a valid query")
+
+        get("/video/{folderName}/{fileName}") {
+            val folderName = call.parameters["folderName"]?.let {
+                URLDecoder.decode(it, StandardCharsets.UTF_8)
+            } ?: return@get call.respond(HttpStatusCode.BadRequest)
+
+            val fileName = call.parameters["fileName"]?.let {
+                URLDecoder.decode(it, StandardCharsets.UTF_8)
+            } ?: return@get call.respond(HttpStatusCode.BadRequest)
+
+            val filePath = "media/$folderName/$fileName"
+            val videoFile = File(filePath)
+
+            if (videoFile.exists()) {
+                streamVideo(videoFile.path)
             } else {
-                val videoFile = File(path)
-
-                if (videoFile.exists()) {
-                    streamVideo(videoFile.path)
-                } else {
-                    call.respondRedirect("/404")
-                }
+                call.respondRedirect("/404")
             }
         }
 
-        get("/image/{query}") {
-            val path = call.parameters["query"]
+        get("/image/{folderName}/{fileName}") {
 
-            if (path == null) {
-                call.respond("Not a valid query")
+            val folderName = call.parameters["folderName"]?.let {
+                URLDecoder.decode(it, StandardCharsets.UTF_8)
+            } ?: return@get call.respond(HttpStatusCode.BadRequest)
+
+            val fileName = call.parameters["fileName"]?.let {
+                URLDecoder.decode(it, StandardCharsets.UTF_8)
+            } ?: return@get call.respond(HttpStatusCode.BadRequest)
+
+            val filePath = "media/$folderName/$fileName"
+            val imageFile = File(filePath)
+
+            if (imageFile.exists()) {
+                image(imageFile.path)
             } else {
-                val imageFile = File(path)
-
-                if (imageFile.exists()) {
-                    image(imageFile.path)
-                } else {
-                    call.respondRedirect("/404")
-                }
+                call.respondRedirect("/404")
             }
         }
+
 
         get("/update") {
             try {

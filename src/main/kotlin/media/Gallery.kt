@@ -25,12 +25,12 @@ fun File.isVideoFile(): Boolean {
     return this.extension.lowercase() in videoExtensions
 }
 
-suspend fun RoutingContext.gallery(folderPath: String, photos: Boolean = true, videos: Boolean = true) {
-    val folder = File(folderPath)
+suspend fun RoutingContext.gallery(projectName: String, folderPath: String, photos: Boolean = true, videos: Boolean = true) {
+    val folder = File(folderPath.drop(1))
     val baseUrl = folder.parent + "/"
 
     if (!folder.exists() || !folder.isDirectory) {
-        logger.info { "Folder does not exist or is not a directory: $folderPath" }
+        logger.info { "Gallery: Folder does not exist or is not a directory: $folderPath" }
         call.respondRedirect("/404")
         return
     }
@@ -55,12 +55,12 @@ suspend fun RoutingContext.gallery(folderPath: String, photos: Boolean = true, v
         val videoCount = mediaFiles.count { it.isVideoFile() }
 
         val mediaComponents = mediaFiles.joinToString("\n") { file ->
-            mediaComponent(file, baseUrl)
+            mediaComponent(file, baseUrl, folder.name)
         }
 
         call.respondText(
             galleryComponent(
-                folder,
+                projectName,
                 mediaFiles,
                 imageCount,
                 videoCount,
