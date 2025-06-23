@@ -1,8 +1,9 @@
 package com.marcoshier.data
 
-import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
+import com.marcoshier.components.logger
 import com.marcoshier.lib.findMatch
+import com.marcoshier.services.MediaService
 import com.marcoshier.services.RefreshService
 import com.marcoshier.types.Author
 import com.marcoshier.types.Category
@@ -12,13 +13,14 @@ import kotlinx.serialization.json.Json
 import java.io.File
 import kotlin.concurrent.thread
 
-class DataService {
+class DataService(mediaService: MediaService) {
 
     private lateinit var provider: DataProvider
 
     private val googleService = GoogleSheetsService()
     private val localService = LocalService()
-    private val refreshService = RefreshService(::updateData)
+    private val refreshService = RefreshService(::update)
+    private val mediaService = MediaService()
 
     private val json = Json { prettyPrint = true }
 
@@ -40,12 +42,20 @@ class DataService {
             provider = fallback
         }
 
-        return fetchAndSerialize()
+        val newData = fetchAndSerialize()
+        reencodeMedia(newData)
+
+        return newData
     }
 
     private fun fetchAndSerialize(): Data {
 
-        val dataMap = provider.getDataWithHeaders()
+        var dataMap = provider.getDataWithHeaders()
+
+        if (dataMap == null) {
+            logger.info { "Datamap is empty, trying to switch with local service" }
+            dataMap = localService.getDataWithHeaders()
+        }
 
         if (!dataMap.isEmpty() && !dataMap[0].isEmpty()) {
             val deserializedFile = File("data/unserialized.csv")
@@ -165,8 +175,18 @@ class DataService {
         return result
     }
 
-    fun updateData() {
-        data = fetchAndSerialize()
+    private fun reencodeMedia(data: Data) {
+        for (project in data.projects) {
+            mediaService.reencodeAllMediaForProject(project.name)
+        }
+    }
+
+
+    fun update() {
+        val newData = fetchAndSerialize()
+        reencodeMedia(newData)
+
+        data = newData
     }
 
 

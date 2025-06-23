@@ -1,18 +1,16 @@
 package com.marcoshier
 
-import com.marcoshier.components.galleryComponent
-import com.marcoshier.components.logger
 import com.marcoshier.data.DataService
 import com.marcoshier.lib.findMatch
 import com.marcoshier.media.gallery
 import com.marcoshier.media.image
 import com.marcoshier.media.mediaManifest
 import com.marcoshier.media.streamVideo
+import com.marcoshier.services.MediaService
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.contentnegotiation.*
-import io.ktor.server.request.receiveText
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import java.io.File
@@ -29,7 +27,8 @@ fun Application.module() {
         json()
     }
 
-    val dataService = DataService()
+    val mediaService = MediaService()
+    val dataService = DataService(mediaService)
 
     routing {
         get("/") {
@@ -166,11 +165,10 @@ fun Application.module() {
                 URLDecoder.decode(it, StandardCharsets.UTF_8)
             } ?: return@get call.respond(HttpStatusCode.BadRequest)
 
-            val filePath = "media/$folderName/$fileName"
-            val videoFile = File(filePath)
+            val convertedVideo = mediaService.getConvertedVideo(folderName, fileName)
 
-            if (videoFile.exists()) {
-                streamVideo(videoFile.path)
+            if (convertedVideo != null && convertedVideo.exists()) {
+                streamVideo(convertedVideo.path)
             } else {
                 call.respondRedirect("/404")
             }
@@ -186,11 +184,10 @@ fun Application.module() {
                 URLDecoder.decode(it, StandardCharsets.UTF_8)
             } ?: return@get call.respond(HttpStatusCode.BadRequest)
 
-            val filePath = "media/$folderName/$fileName"
-            val imageFile = File(filePath)
+            val convertedImage = mediaService.getConvertedImage(folderName, fileName)
 
-            if (imageFile.exists()) {
-                image(imageFile.path)
+            if (convertedImage != null && convertedImage.exists()) {
+                image(convertedImage.path)
             } else {
                 call.respondRedirect("/404")
             }
@@ -199,7 +196,7 @@ fun Application.module() {
 
         get("/update") {
             try {
-                dataService.updateData()
+                dataService.update()
                 call.respond("Aggiornato alle ${LocalDateTime.now()}")
             } catch (e: Throwable) {
                 call.respond("")

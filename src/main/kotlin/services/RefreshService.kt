@@ -27,10 +27,3 @@ class RefreshService(val callback: () -> Unit) {
     }
 
 }
-
-fun main() {
-
-    val r = RefreshService { println("yes") }
-
-    r.tick()
-}

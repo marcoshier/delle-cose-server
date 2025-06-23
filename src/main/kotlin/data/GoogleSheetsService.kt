@@ -18,8 +18,8 @@ class GoogleSheetsService: DataProvider {
         }
     }
 
-    override fun getDataWithHeaders(): List<Map<String, String>> {
-        return client!!.readSheetAsRecords(spreadsheetId, "A1:F54")!!
+    override fun getDataWithHeaders(): List<Map<String, String>>? {
+        return client!!.readSheetAsRecords(spreadsheetId, "A1:F54")
     }
 
 }
