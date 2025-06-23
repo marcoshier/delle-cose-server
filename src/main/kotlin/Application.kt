@@ -196,7 +196,7 @@ fun Application.module() {
 
         get("/update") {
             try {
-                dataService.update()
+                dataService.updateWithMedia()
                 call.respond("Aggiornato alle ${LocalDateTime.now()}")
             } catch (e: Throwable) {
                 call.respond("")

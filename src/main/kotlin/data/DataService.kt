@@ -184,8 +184,12 @@ class DataService(mediaService: MediaService) {
 
     fun update() {
         val newData = fetchAndSerialize()
-        reencodeMedia(newData)
+        data = newData
+    }
 
+    fun updateWithMedia() {
+        val newData = fetchAndSerialize()
+        reencodeMedia(newData)
         data = newData
     }
 

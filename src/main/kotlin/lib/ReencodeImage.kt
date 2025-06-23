@@ -5,38 +5,37 @@ import io.ktor.server.application.*
 import java.io.File
 
 private val logger = KotlinLogging.logger {  }
-
 fun reencodeImage(folderName: String, imageName: String, maxHeight: Int): File {
-
-    val fullSizePath = "media/$folderName/$imageName"
     val convertedPath = "converted/$folderName/$imageName"
+    val outputFile = File(convertedPath)
 
-    if (File(convertedPath).exists()) {
+    if (outputFile.exists()) {
         logger.info { "image already exist, skipping resize" }
-        return File(convertedPath)
+        return outputFile
     }
 
-    val executable = "convert"
+    outputFile.parentFile?.mkdirs()
 
-    val retVal =
-        ProcessBuilder()
-            .command(listOf(
-                executable,
-                "\"${File(fullSizePath).path}\"",
-                "-geometry",
-                "x$maxHeight",
-                "\"${File(convertedPath).path}\""
-            )
-            )
-            .redirectError(File("convert.error.txt"))
-            .start().waitFor()
+    val inputFile = File("media/$folderName/$imageName")
+    if (!inputFile.exists()) {
+        logger.error { "Input file does not exist: ${inputFile.absolutePath}" }
+        return outputFile
+    }
+
+    val retVal = ProcessBuilder(
+        "thirdparty/im/ImageMagick-7.1.1-38-portable-Q16-x64/magick.exe",
+        inputFile.absolutePath,
+        "-geometry",
+        "x$maxHeight",
+        outputFile.absolutePath
+    ).redirectError(File("magick.error.txt"))
+        .start().waitFor()
 
     if (retVal != 0) {
-        logger.warn { "conversion failed ($fullSizePath -> $convertedPath $maxHeight) $retVal" }
+        logger.warn { "conversion failed (${inputFile.path} -> ${outputFile.path} $maxHeight) $retVal" }
     } else {
         logger.info { "done reencoding" }
-        }
+    }
 
-
-    return File(convertedPath)
+    return outputFile
 }
