@@ -25,6 +25,7 @@ dependencies {
     implementation("com.google.apis:google-api-services-sheets:v4-rev20220927-2.0.0")
     implementation("com.google.oauth-client:google-oauth-client-jetty:1.34.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+    implementation("io.github.oshai:kotlin-logging:7.0.7")
 
     implementation("com.github.doyaaaaaken:kotlin-csv:1.10.0")
     implementation(libs.ktor.server.core)

@@ -118,7 +118,7 @@ class DataService {
             val projectsPerAuthor = mutableListOf<Int>()
 
             for (p in projects) {
-                if (p.authors!!.contains(i)) {
+                if (p.authors.contains(i)) {
                     projectsPerAuthor.add(
                         projects.indexOf(p)
                     )
@@ -135,7 +135,7 @@ class DataService {
             val projectsPerCategory = mutableListOf<Int>()
 
             for (p in projects) {
-                if (p.categories!!.contains(i)) {
+                if (p.categories.contains(i)) {
                     projectsPerCategory.add(
                         projects.indexOf(p)
                     )
