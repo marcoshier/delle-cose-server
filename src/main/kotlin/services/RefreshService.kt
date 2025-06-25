@@ -2,7 +2,7 @@ package com.marcoshier.services
 
 import kotlin.concurrent.thread
 
-class RefreshService(val callback: () -> Unit) {
+class RefreshService(val callbacks: MutableList<() -> Unit> = mutableListOf()) {
 
     var start = System.currentTimeMillis()
 
@@ -10,13 +10,18 @@ class RefreshService(val callback: () -> Unit) {
         set(value) {
             if (field != value) {
                 if (field % 60 == 0) {
-                    callback()
+                    for (callback in callbacks) {
+                        callback()
+                    }
                 }
 
                 field = value
             }
         }
 
+    fun add(f: () -> Unit) {
+        callbacks.add(f)
+    }
 
     fun tick() {
         start = System.currentTimeMillis()

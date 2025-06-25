@@ -12,7 +12,7 @@ import kotlin.math.PI
 private val logger = KotlinLogging.logger {  }
 
 fun String.sanitize(): String {
-    return this.replace(Regex("[<>:\"/\\\\|?*]"), "")
+    return this.replace(Regex("[<>:\"/\\\\|?*.]"), "")
 }
 
 class MediaService() {

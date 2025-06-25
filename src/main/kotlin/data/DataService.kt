@@ -20,10 +20,11 @@ class DataService: KoinComponent {
     private val googleService by inject<GoogleSheetsService>()
     private val localService by inject<LocalService>()
     private val mediaService by inject<MediaService>()
+    private val refreshService by inject<RefreshService>()
+
 
     private lateinit var provider: DataProvider
 
-    private val refreshService = RefreshService(::update)
 
     private val json = Json { prettyPrint = true }
 
@@ -221,6 +222,11 @@ class DataService: KoinComponent {
     fun getAuthor(name: String): Author? {
         val a = findMatch(authors, name)
         return data.authors.find { it.name == a }
+    }
+
+
+    init {
+        refreshService.add(::update)
     }
 
 }

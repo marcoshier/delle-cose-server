@@ -10,6 +10,7 @@ import com.marcoshier.services.MediaService
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondRedirect
+import io.ktor.server.routing.Route
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import org.koin.ktor.ext.inject
@@ -18,7 +19,7 @@ import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import kotlin.getValue
 
-fun Routing.mediaRoutes() {
+fun Route.mediaRoutes() {
 
     val dataService by inject<DataService>()
     val mediaService by inject<MediaService>()

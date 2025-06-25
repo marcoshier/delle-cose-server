@@ -39,3 +39,5 @@ data/credentials.json
 data/StoredCredential
 /media/
 /converted/
+/ffmpeg.log.txt
+/magick.error.txt

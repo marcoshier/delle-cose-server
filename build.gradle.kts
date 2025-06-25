@@ -22,7 +22,7 @@ repositories {
 dependencies {
 
     implementation(libs.koin.core)
-    implementation(libs.koin.bom)
+    implementation(project.dependencies.platform(libs.koin.bom))
     implementation(libs.koin.ktor)
     implementation(libs.koin.logger.slf4j)
 
@@ -35,6 +35,7 @@ dependencies {
     implementation("com.github.doyaaaaaken:kotlin-csv:1.10.0")
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.resources)
+    implementation(libs.ktor.server.sessions)
     implementation(libs.ktor.server.host.common)
     implementation(libs.ktor.server.default.headers)
     implementation(libs.ktor.server.cors)
@@ -42,7 +43,9 @@ dependencies {
     implementation(libs.ktor.server.content.negotiation)
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.ktor.server.netty)
-    implementation(libs.logback.classic)
     testImplementation(libs.ktor.server.test.host)
+
     testImplementation(libs.kotlin.test.junit)
+    implementation(libs.logback.classic)
+
 }
