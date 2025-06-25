@@ -48,4 +48,5 @@ dependencies {
     testImplementation(libs.kotlin.test.junit)
     implementation(libs.logback.classic)
 
+    implementation("org.mindrot:jbcrypt:0.4")
 }

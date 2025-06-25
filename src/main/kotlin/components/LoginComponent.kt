@@ -3,7 +3,7 @@ package com.marcoshier.components
 import io.ktor.server.routing.RoutingContext
 
 
-fun RoutingContext.loginComponent() = """
+fun RoutingContext.loginComponent(redirectUrl: String? = null) = """
      <!DOCTYPE html>
         <html>
         <head>
@@ -11,8 +11,8 @@ fun RoutingContext.loginComponent() = """
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <style>
                 body {
-                    font-family: Arial, sans-serif;
-                    background-color: #f5f5f5;
+                    font-family: monospace;
+                    background-color: white;
                     display: flex;
                     justify-content: center;
                     align-items: center;
@@ -22,15 +22,16 @@ fun RoutingContext.loginComponent() = """
                 .login-container {
                     background: white;
                     padding: 2rem;
-                    border-radius: 8px;
-                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                    border-radius: 1px;
                     width: 100%;
+                    border: 1px solid black;
                     max-width: 400px;
                 }
                 .login-title {
                     text-align: center;
                     margin-bottom: 2rem;
-                    color: #333;
+                    font-weight: 400;
+                    color: black;
                 }
                 .form-group {
                     margin-bottom: 1rem;
@@ -51,15 +52,16 @@ fun RoutingContext.loginComponent() = """
                 .login-button {
                     width: 100%;
                     padding: 0.75rem;
-                    background-color: #007bff;
-                    color: white;
-                    border: none;
+                    background-color: white;
+                    border: 1px solid black;
+                    color: black;
                     border-radius: 4px;
                     font-size: 1rem;
                     cursor: pointer;
                 }
                 .login-button:hover {
-                    background-color: #0056b3;
+                    background-color: black;
+                    color: white;
                 }
                 .error {
                     color: #dc3545;
@@ -70,16 +72,13 @@ fun RoutingContext.loginComponent() = """
         </head>
         <body>
             <div class="login-container">
-                <h2 class="login-title">Media Gallery Login</h2>
                 <form method="post" action="/login">
+                    ${if (redirectUrl != null) """<input type="hidden" name="redirect" value="$redirectUrl">""" else ""}
                     <div class="form-group">
                         <label for="password">Password:</label>
                         <input type="password" id="password" name="password" required>
                     </div>
                     <button type="submit" class="login-button">Login</button>
-                    ${if (call.request.queryParameters["error"] == "invalid")
-                        """<div class="error">Invalid password. Please try again.</div>"""
-                    else ""}
                 </form>
             </div>
         </body>

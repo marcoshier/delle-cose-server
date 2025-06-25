@@ -41,3 +41,4 @@ data/StoredCredential
 /converted/
 /ffmpeg.log.txt
 /magick.error.txt
+/src/main/kotlin/auth/Hash.kt

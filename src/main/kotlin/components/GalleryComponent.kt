@@ -2,6 +2,7 @@ package com.marcoshier.components
 
 import com.marcoshier.auth.UserSession
 import com.marcoshier.services.AuthService
+import io.ktor.server.request.uri
 import io.ktor.server.routing.RoutingContext
 import io.ktor.server.sessions.get
 import io.ktor.server.sessions.sessions
@@ -102,7 +103,7 @@ fun RoutingContext.galleryComponent(projectName: String, mediaFiles: List<File>,
             <div class="container">
                 <div class="header">
                     <h1>media / ${projectName}</h1>
-                    ${if (!isAuthenticated) """<a href="/login" class="login-link">login </a>""" else ""}
+                     ${if (!isAuthenticated) """<a href="/login" class="login-link">login</a>""" else """<a href="/logout" class="login-link">logout</a>"""}
                 </div>
                 <div class="stats">
                     <strong>Totale File:</strong> ${mediaFiles.size} 

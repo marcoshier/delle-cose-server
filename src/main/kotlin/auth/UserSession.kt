@@ -6,5 +6,5 @@ import kotlinx.serialization.Serializable
 data class UserSession(
     val sessionId: String,
     val expiresAt: Long,
-    val isAuthenticated: Boolean = false
+    val isAuthenticated: Boolean = false,
 )

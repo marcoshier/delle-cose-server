@@ -30,3 +30,16 @@ data class Category(
     val name: String,
     val projects: List<Int>
 )
+
+
+@Serializable
+data class MediaItems(
+    val items: List<MediaItem>
+)
+
+@Serializable
+data class MediaItem(
+    val filename: String,
+    val caption: String,
+    val type: String
+)

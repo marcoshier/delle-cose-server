@@ -17,9 +17,6 @@ import io.ktor.server.sessions.get
 import io.ktor.server.sessions.sessions
 import io.ktor.server.sessions.set
 import org.koin.ktor.ext.getKoin
-import org.koin.ktor.ext.inject
-import org.koin.ktor.plugin.koin
-import kotlin.math.log
 
 private val logger = KotlinLogging.logger {  }
 
@@ -30,11 +27,21 @@ fun Route.authRoutes() {
         val session = call.sessions.get<UserSession>()
 
         if (session != null && authService.isSessionAuthenticated(session.sessionId)) {
-            call.respondRedirect("/media") // TODO last visited page
+            val referer = call.request.headers["Referer"]
+            val destination = if (referer != null && !referer.contains("/login")) {
+                referer
+            } else {
+                "/"
+            }
+
+            call.respondRedirect(destination)
             return@get
         }
 
-        call.respondText(loginComponent(), ContentType.Text.Html)
+        val referer = call.request.headers["Referer"]
+        val redirectUrl = if (referer != null && !referer.contains("/login")) referer else null
+
+        call.respondText(loginComponent(redirectUrl), ContentType.Text.Html)
     }
 
     post("/login") {
@@ -44,33 +51,35 @@ fun Route.authRoutes() {
             logger.info { "No valid session found, creating new one..." }
             session = authService.createSession()
             call.sessions.set(session)
-        } else {
-            logger.info { "Existing session from cookie: ${session.sessionId.take(4)}" }
         }
 
         val formParams = call.receiveParameters()
-        val password = formParams["password"]
+        val userInput = formParams["password"]
+        val redirectUrl = formParams["redirect"] // Get from form data instead of referer
 
-        if (password.isNullOrBlank()) {
+        if (userInput.isNullOrBlank()) {
             logger.info { "Entered password is null or blank" }
             return@post
         }
 
-        if (authService.authenticateSession(session.sessionId, password)) {
+        if (authService.authenticateSession(session.sessionId, userInput)) {
             logger.info { "Password correct, redirecting.." }
 
             val authenticatedSession = session.copy(isAuthenticated = true)
             call.sessions.set(authenticatedSession)
-            call.respondRedirect("/media") // TODO last visited page
+
+            val destination = redirectUrl ?: "/"
+
+            logger.info { "Redirecting to: '$destination'" }
+            call.respondRedirect(destination)
         } else {
             logger.info { "Input invalid password" }
-
             call.sessions.set(session)
             call.respondRedirect("/login?error=invalid")
         }
     }
 
-    post("/logout") {
+    get("/logout") {
         val session = call.sessions.get<UserSession>()
         if (session != null) {
             authService.logout(session.sessionId)

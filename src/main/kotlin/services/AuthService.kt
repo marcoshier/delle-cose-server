@@ -4,13 +4,12 @@ import com.marcoshier.auth.UserSession
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.mindrot.jbcrypt.BCrypt
 import java.time.Instant
 import java.util.UUID
 import kotlin.getValue
 
 private val logger = KotlinLogging.logger {  }
-
-val PASS = "popipopi"
 
 class AuthService: KoinComponent {
     private val refreshService by inject<RefreshService>()
@@ -31,7 +30,9 @@ class AuthService: KoinComponent {
     }
 
 
-    fun authenticateSession(sessionId: String, password: String): Boolean {
+    private val hash = System.getenv("hash") ?: error("hash env not set")
+
+    fun authenticateSession(sessionId: String, userInput: String): Boolean {
 
         logger.info { "Attempting authentication of: ${sessionId.take(4)}" }
 
@@ -48,7 +49,7 @@ class AuthService: KoinComponent {
             return false
         }
 
-        if (password == PASS) {
+        if (compareHash(userInput)) {
             sessions[sessionId] = session.copy(isAuthenticated = true)
             return true
         }
@@ -57,6 +58,9 @@ class AuthService: KoinComponent {
 
     }
 
+    private fun compareHash(input: String): Boolean {
+        return BCrypt.checkpw(input, hash)
+    }
 
     fun isSessionAuthenticated(sessionId: String): Boolean {
         val session = sessions[sessionId] ?: return false
