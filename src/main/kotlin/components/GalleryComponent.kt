@@ -1,8 +1,21 @@
 package com.marcoshier.components
 
+import com.marcoshier.auth.UserSession
+import com.marcoshier.services.AuthService
+import io.ktor.server.routing.RoutingContext
+import io.ktor.server.sessions.get
+import io.ktor.server.sessions.sessions
+import org.koin.ktor.ext.getKoin
 import java.io.File
 
-fun galleryComponent(projectName: String, mediaFiles: List<File>, imageCount: Int, videoCount: Int, mediaComponents: String) = """
+
+fun RoutingContext.galleryComponent(projectName: String, mediaFiles: List<File>, imageCount: Int, videoCount: Int, mediaComponents: String): String {
+
+    val session = call.sessions.get<UserSession>()
+    val authService = call.application.getKoin().get<AuthService>()
+    val isAuthenticated = session != null && authService.isSessionAuthenticated(session.sessionId)
+
+    return """
         <!DOCTYPE html>
         <html>
         <head>
@@ -13,26 +26,49 @@ fun galleryComponent(projectName: String, mediaFiles: List<File>, imageCount: In
                     font-family: monospace;
                     margin: 0;
                     padding: 20px;
-                    background-color: #f5f5f5;
+                    background-color: white;
                 }
                 .container {
                     max-width: 90vw;
                     margin: 0 auto;
                 }
+                .header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-top: 30px;
+                    margin-bottom: 60px;
+                }
                 h1 {
-                    text-align: center;
+                    font-weight: 400;
                     color: #000;
-                    margin-bottom: 30px;
+                    margin: 0;
+                }
+                .login-link {
+                    color: black;
+                    font-size: 15px;
+                }
+                .media-content-wrapper {
+                    display: flex;
+                    width: 100%;
+                    flex-direction: row;
+                }
+                .media-content {
+                    width: 100%;
+                }
+                .media-content-info {
+                    padding-left: 20px;
                 }
                 .media-item {
-                    margin-bottom: 30px;
+                    margin-bottom: 10px;
                     background: white;
                     padding: 20px;
-                    border-radius: 8px;
+                    border-radius: 1px;
+                    border: 1px solid black;
                 }
                 .media-title {
-                    font-size: 18px;
-                    font-weight: bold;
+                    font-size: 20px;
+                    font-weight: 400;
                     margin-bottom: 10px;
                     color: #333;
                 }
@@ -44,27 +80,30 @@ fun galleryComponent(projectName: String, mediaFiles: List<File>, imageCount: In
                 img {
                     max-width: 100%;
                     height: auto;
-                    border-radius: 4px;
                     display: block;
                 }
                 video {
-                    max-width: 100%;
+                    width: 100%;
                     height: auto;
-                    border-radius: 4px;
                     display: block;
                 }
                 .stats {
-                    text-align: center;
+                    text-align: left;
                     margin-bottom: 30px;
                     padding: 15px;
+                    font-size: 16px;
                     background: white;
-                    border-radius: 8px;
+                    border-radius: 1px;
+                    border: 1px solid black;
                 }
             </style>
         </head>
         <body>
             <div class="container">
-                <h1>Media / ${projectName}</h1>
+                <div class="header">
+                    <h1>media / ${projectName}</h1>
+                    ${if (!isAuthenticated) """<a href="/login" class="login-link">login </a>""" else ""}
+                </div>
                 <div class="stats">
                     <strong>Totale File:</strong> ${mediaFiles.size} 
                     (<strong>Immagini:</strong> $imageCount, <strong>Video:</strong> $videoCount)
@@ -74,3 +113,4 @@ fun galleryComponent(projectName: String, mediaFiles: List<File>, imageCount: In
         </body>
         </html>
     """.trimIndent()
+}

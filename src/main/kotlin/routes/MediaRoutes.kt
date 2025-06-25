@@ -6,13 +6,16 @@ import com.marcoshier.media.gallery
 import com.marcoshier.media.image
 import com.marcoshier.media.mediaManifest
 import com.marcoshier.media.streamVideo
+import com.marcoshier.services.AuthService
 import com.marcoshier.services.MediaService
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondRedirect
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.Routing
+import io.ktor.server.routing.application
 import io.ktor.server.routing.get
+import org.koin.ktor.ext.getKoin
 import org.koin.ktor.ext.inject
 import java.io.File
 import java.net.URLDecoder
@@ -20,9 +23,8 @@ import java.nio.charset.StandardCharsets
 import kotlin.getValue
 
 fun Route.mediaRoutes() {
-
-    val dataService by inject<DataService>()
-    val mediaService by inject<MediaService>()
+    val dataService = application.getKoin().get<DataService>()
+    val mediaService = application.getKoin().get<MediaService>()
 
     val mediaPath = run {
         val f = File("media/")

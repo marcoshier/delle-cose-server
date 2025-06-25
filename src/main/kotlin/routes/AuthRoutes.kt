@@ -38,7 +38,16 @@ fun Route.authRoutes() {
     }
 
     post("/login") {
-        val session = call.sessions.get<UserSession>() ?: authService.createSession()
+        var session = call.sessions.get<UserSession>()
+
+        if (session == null || !authService.sessionExists(session.sessionId)) {
+            logger.info { "No valid session found, creating new one..." }
+            session = authService.createSession()
+            call.sessions.set(session)
+        } else {
+            logger.info { "Existing session from cookie: ${session.sessionId.take(4)}" }
+        }
+
         val formParams = call.receiveParameters()
         val password = formParams["password"]
 
@@ -48,10 +57,14 @@ fun Route.authRoutes() {
         }
 
         if (authService.authenticateSession(session.sessionId, password)) {
+            logger.info { "Password correct, redirecting.." }
+
             val authenticatedSession = session.copy(isAuthenticated = true)
             call.sessions.set(authenticatedSession)
             call.respondRedirect("/media") // TODO last visited page
         } else {
+            logger.info { "Input invalid password" }
+
             call.sessions.set(session)
             call.respondRedirect("/login?error=invalid")
         }

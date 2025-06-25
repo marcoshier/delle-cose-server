@@ -20,7 +20,6 @@ fun mediaComponent(file: File, baseUrl: String, folderName: String): String {
 
     val mediaContent = if (file.isImageFile()) {
         """
-            <p>${fullUrl}</p>
             <img src="/image/$fullUrl" alt="${file.name}" loading="lazy">""".trimIndent()
     } else {
         """
@@ -37,7 +36,14 @@ fun mediaComponent(file: File, baseUrl: String, folderName: String): String {
                 <div class="media-info">
                     Size: ${formatFileSize(file.length())}
                 </div>
-                $mediaContent
+                <div class="media-content-wrapper">
+                    <div class="media-content-item media-content">
+                        $mediaContent
+                    </div>
+                    <div class="media-content-info media-content">
+                        <p>popi</p>
+                    </div>
+                </div>
             </div>
             """.trimIndent()
 }

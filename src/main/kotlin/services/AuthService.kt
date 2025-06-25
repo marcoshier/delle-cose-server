@@ -22,19 +22,23 @@ class AuthService: KoinComponent {
         val sessionId = UUID.randomUUID().toString()
         val expiresAt = Instant.now().plusSeconds(4 * 3600).epochSecond
 
-        val session = sessions.getOrPut(sessionId) {
-            UserSession(sessionId, expiresAt)
-        }
+        val session = UserSession(sessionId, expiresAt)
+        sessions[sessionId] = session
+
+        logger.info { "Created session with ID: ${sessionId.take(4)}" }
 
         return session
     }
 
 
     fun authenticateSession(sessionId: String, password: String): Boolean {
+
+        logger.info { "Attempting authentication of: ${sessionId.take(4)}" }
+
         val session = sessions[sessionId]
 
         if (session == null) {
-            logger.info { "Session not found with provided id" }
+            logger.info { "Session not found with provided id: ${sessionId.take(4)}" }
             return false
         }
 
@@ -78,6 +82,10 @@ class AuthService: KoinComponent {
     fun cleanupExpiredSessions() {
         val now = Instant.now().epochSecond
         sessions.entries.removeIf { it.value.expiresAt < now }
+    }
+
+    fun sessionExists(sessionId: String): Boolean {
+        return sessions.containsKey(sessionId)
     }
 
     init {
