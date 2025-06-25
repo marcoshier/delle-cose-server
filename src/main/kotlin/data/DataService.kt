@@ -10,17 +10,20 @@ import com.marcoshier.types.Category
 import com.marcoshier.types.Data
 import com.marcoshier.types.Project
 import kotlinx.serialization.json.Json
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import org.koin.java.KoinJavaComponent.inject
 import java.io.File
 import kotlin.concurrent.thread
 
-class DataService(mediaService: MediaService) {
+class DataService: KoinComponent {
+    private val googleService by inject<GoogleSheetsService>()
+    private val localService by inject<LocalService>()
+    private val mediaService by inject<MediaService>()
 
     private lateinit var provider: DataProvider
 
-    private val googleService = GoogleSheetsService()
-    private val localService = LocalService()
     private val refreshService = RefreshService(::update)
-    private val mediaService = MediaService()
 
     private val json = Json { prettyPrint = true }
 

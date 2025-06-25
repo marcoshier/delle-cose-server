@@ -1,11 +1,10 @@
 package com.marcoshier
 
 import com.marcoshier.data.DataService
-import com.marcoshier.lib.findMatch
-import com.marcoshier.media.gallery
-import com.marcoshier.media.image
-import com.marcoshier.media.mediaManifest
-import com.marcoshier.media.streamVideo
+import com.marcoshier.data.GoogleSheetsService
+import com.marcoshier.data.LocalService
+import com.marcoshier.routes.mediaRoutes
+import com.marcoshier.routes.userRoutes
 import com.marcoshier.services.MediaService
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.*
@@ -13,9 +12,10 @@ import io.ktor.server.application.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import java.io.File
-import java.net.URLDecoder
-import java.nio.charset.StandardCharsets
+import org.koin.dsl.module
+import org.koin.ktor.ext.inject
+import org.koin.ktor.plugin.Koin
+import org.koin.logger.slf4jLogger
 import java.time.LocalDateTime
 
 fun main(args: Array<String>) {
@@ -26,9 +26,21 @@ fun Application.module() {
     install(ContentNegotiation) {
         json()
     }
+    install(Koin) {
+        slf4jLogger()
+        modules(
+            module {
+                single { DataService() }
+                single { MediaService() }
+            },
+            module {
+                single { GoogleSheetsService() }
+                single { LocalService() }
+            }
+        )
+    }
 
-    val mediaService = MediaService()
-    val dataService = DataService(mediaService)
+    val dataService by inject<DataService>()
 
     routing {
         get("/") {
@@ -69,131 +81,6 @@ fun Application.module() {
             }
         }
 
-
-        val mediaPath = run {
-            val f = File("media/")
-
-            if (!f.exists()) {
-                f.mkdir()
-            }
-
-            f
-        }
-
-        val mediaFolders = mediaPath.listFiles().filter { it.isDirectory }
-
-        get("/media/{query}") {
-            val projectName = call.parameters["query"]
-            val project = projectName?.let { dataService.getProject(projectName) }
-
-            if (project == null) {
-                call.respond("Non ho trovato una cartella media con nome simile a $projectName")
-            } else {
-                val dirName = findMatch(mediaFolders.map { it.nameWithoutExtension }, project.name)
-
-                if (dirName == null) {
-                    call.respond("Cartella media non trovata con nome simile a ${project.name}")
-                    return@get
-                }
-
-                gallery(project.name, "/media/$dirName")
-            }
-        }
-
-        get("/media-manifest/{query}") {
-            val projectName = call.parameters["query"]
-            val project = projectName?.let { dataService.getProject(projectName) }
-
-            if (project == null) {
-                call.respond("Non ho trovato una cartella media con nome simile a $projectName")
-            } else {
-                val dirName = findMatch(mediaFolders.map { it.nameWithoutExtension }, project.name)
-
-                if (dirName == null) {
-                    call.respond("Cartella foto non trovata con nome simile a ${project.name}")
-                    return@get
-                }
-
-                mediaManifest("/media/$dirName")
-            }
-        }
-
-        get("/images/{query}") {
-            val projectName = call.parameters["query"]
-            val project = projectName?.let { dataService.getProject(projectName) }
-
-            if (project == null) {
-                call.respond("Non ho trovato una progetto con nome simile a $projectName")
-            } else {
-                val dirName = findMatch(mediaFolders.map { it.nameWithoutExtension }, project.name)
-
-                if (dirName == null) {
-                    call.respond("Non ho trovato una cartella foto con nome simile a ${project.name}")
-                    return@get
-                }
-
-                gallery(project.name, "/media/$dirName", photos = true, videos = false)
-            }
-        }
-
-        get("/videos/{query}") {
-            val projectName = call.parameters["query"]
-            val project = projectName?.let { dataService.getProject(projectName) }
-
-            if (project == null) {
-                call.respond("Non ho trovato un progetto con nome simile a $projectName")
-            } else {
-                val dirName = findMatch(mediaFolders.map { it.nameWithoutExtension }, project.name)
-
-                if (dirName == null) {
-                    call.respond("Non ho trovato una cartella foto con nome simile a ${project.name}")
-                    return@get
-                }
-
-                gallery(project.name, "/media/$dirName", photos = false, videos = true)
-            }
-        }
-
-
-
-        get("/video/{folderName}/{fileName}") {
-            val folderName = call.parameters["folderName"]?.let {
-                URLDecoder.decode(it, StandardCharsets.UTF_8)
-            } ?: return@get call.respond(HttpStatusCode.BadRequest)
-
-            val fileName = call.parameters["fileName"]?.let {
-                URLDecoder.decode(it, StandardCharsets.UTF_8)
-            } ?: return@get call.respond(HttpStatusCode.BadRequest)
-
-            val convertedVideo = mediaService.getConvertedVideo(folderName, fileName)
-
-            if (convertedVideo != null && convertedVideo.exists()) {
-                streamVideo(convertedVideo.path)
-            } else {
-                call.respondRedirect("/404")
-            }
-        }
-
-        get("/image/{folderName}/{fileName}") {
-
-            val folderName = call.parameters["folderName"]?.let {
-                URLDecoder.decode(it, StandardCharsets.UTF_8)
-            } ?: return@get call.respond(HttpStatusCode.BadRequest)
-
-            val fileName = call.parameters["fileName"]?.let {
-                URLDecoder.decode(it, StandardCharsets.UTF_8)
-            } ?: return@get call.respond(HttpStatusCode.BadRequest)
-
-            val convertedImage = mediaService.getConvertedImage(folderName, fileName)
-
-            if (convertedImage != null && convertedImage.exists()) {
-                image(convertedImage.path)
-            } else {
-                call.respondRedirect("/404")
-            }
-        }
-
-
         get("/update") {
             try {
                 dataService.updateWithMedia()
@@ -206,6 +93,14 @@ fun Application.module() {
         get("/404") {
             call.respond(HttpStatusCode.NotFound)
         }
+
+
+
+        mediaRoutes()
+
+        userRoutes()
+
+
     }
 
 }

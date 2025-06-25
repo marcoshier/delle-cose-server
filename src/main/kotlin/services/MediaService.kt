@@ -21,20 +21,20 @@ class MediaService() {
     var convertedPath = "converted"
 
     fun reencodeAllMediaForProject(projectName: String) {
-        val allFolders = File("media").listFiles()!!.filter { it.isDirectory }
+        val allFolders = File(fullSizePath).listFiles()!!.filter { it.isDirectory }
         val folderName = findMatch(allFolders.map { it.nameWithoutExtension }, projectName)
 
         var nameRef = folderName?.sanitize()
 
         if (folderName == null) {
-            File("media/${projectName.sanitize()}").mkdirs()
+            File("$fullSizePath/${projectName.sanitize()}").mkdirs()
             nameRef = projectName.sanitize()
         }
 
-        val outputFolder = File("converted/$nameRef")
+        val outputFolder = File("$convertedPath/$nameRef")
         outputFolder.mkdirs()
 
-        val mediaFolder = File("media/$nameRef")
+        val mediaFolder = File("$fullSizePath/$nameRef")
         val files = mediaFolder.listFiles().filter { it.isFile }
 
         for (file in files) {
