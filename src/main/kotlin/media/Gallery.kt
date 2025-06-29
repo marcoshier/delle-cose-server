@@ -3,12 +3,14 @@ package com.marcoshier.media
 import com.marcoshier.components.galleryComponent
 import com.marcoshier.components.mediaComponent
 import com.marcoshier.components.noMediaComponent
+import com.marcoshier.services.MediaService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.response.respondRedirect
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.RoutingContext
+import org.koin.ktor.ext.getKoin
 import java.io.File
 
 private val logger = KotlinLogging.logger { }
@@ -26,8 +28,9 @@ fun File.isVideoFile(): Boolean {
 }
 
 suspend fun RoutingContext.gallery(projectName: String, folderPath: String, photos: Boolean = true, videos: Boolean = true) {
+    val mediaService = call.application.getKoin().get<MediaService>()
+
     val folder = File(folderPath.drop(1))
-    val baseUrl = folder.parent + "/"
 
     if (!folder.exists() || !folder.isDirectory) {
         logger.info { "Gallery: Folder does not exist or is not a directory: $folderPath" }
@@ -54,8 +57,13 @@ suspend fun RoutingContext.gallery(projectName: String, folderPath: String, phot
         val imageCount = mediaFiles.count { it.isImageFile() }
         val videoCount = mediaFiles.count { it.isVideoFile() }
 
+        val mediaInfo = mediaService.loadMediaInfo(folder.name)
+
+        require(mediaInfo.items.size == mediaFiles.size)
+
         val mediaComponents = mediaFiles.joinToString("\n") { file ->
-            mediaComponent(file, baseUrl, folder.name)
+            val mediaInfoItem = mediaInfo.items[file.name]!!
+            mediaComponent(file, folder.name, mediaInfoItem)
         }
 
         call.respondText(

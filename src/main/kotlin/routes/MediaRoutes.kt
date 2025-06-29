@@ -1,26 +1,31 @@
 package com.marcoshier.routes
 
+import com.marcoshier.auth.requireAuth
+import com.marcoshier.components.logger
 import com.marcoshier.data.DataService
 import com.marcoshier.lib.findMatch
 import com.marcoshier.media.gallery
 import com.marcoshier.media.image
 import com.marcoshier.media.mediaManifest
 import com.marcoshier.media.streamVideo
-import com.marcoshier.services.AuthService
 import com.marcoshier.services.MediaService
+import com.marcoshier.services.sanitize
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.content.PartData
+import io.ktor.http.content.forEachPart
+import io.ktor.server.request.receiveMultipart
+import io.ktor.server.request.receiveParameters
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondRedirect
 import io.ktor.server.routing.Route
-import io.ktor.server.routing.Routing
 import io.ktor.server.routing.application
 import io.ktor.server.routing.get
+import io.ktor.server.routing.post
+import io.ktor.utils.io.jvm.javaio.copyTo
 import org.koin.ktor.ext.getKoin
-import org.koin.ktor.ext.inject
 import java.io.File
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
-import kotlin.getValue
 
 fun Route.mediaRoutes() {
     val dataService = application.getKoin().get<DataService>()
@@ -149,6 +154,35 @@ fun Route.mediaRoutes() {
         }
     }
 
+    post("/update-caption") {
+        call.requireAuth {
+            val formParams = call.receiveParameters()
+            val fileName = formParams["filename"]
+            val folderName = formParams["foldername"]
+            val caption = formParams["caption"]
 
+            if (caption == null || folderName == null || fileName == null) {
+                logger.info { "incomplete data received $fileName, $folderName, $caption" }
+                return@requireAuth
+            }
+
+            val success = mediaService.updateCaption(folderName, fileName, caption)
+
+            if (success) {
+                val referer = call.request.headers["Referer"] ?: "/"
+                call.respondRedirect(referer)
+            } else {
+                call.respond(HttpStatusCode.InternalServerError, "Failed to update caption")
+            }
+        }
+    }
+
+    post("/upload-media") {
+        call.requireAuth {
+            val multipart = call.receiveMultipart()
+            val result = mediaService.upload(multipart)
+            call.respond(result)
+        }
+    }
 
 }

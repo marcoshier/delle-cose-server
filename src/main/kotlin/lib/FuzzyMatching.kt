@@ -30,7 +30,8 @@ fun levenshteinDistanceOptimized(s1: String, s2: String, maxDistance: Int = 5): 
 fun findMatch(dictionary: List<String>, query: String): String? {
     val queryLower = query.lowercase()
 
-    return dictionary.find { it.lowercase().startsWith(queryLower) }
+    return dictionary.find { it.lowercase() == queryLower }
+        ?: dictionary.find { it.lowercase().startsWith(queryLower) }
         ?: dictionary.find { it.lowercase().contains(queryLower) }
         ?: dictionary.mapNotNull { word ->
             levenshteinDistanceOptimized(word, query)?.let { distance -> word to distance }

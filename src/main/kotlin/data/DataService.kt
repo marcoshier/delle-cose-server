@@ -5,14 +5,10 @@ import com.marcoshier.components.logger
 import com.marcoshier.lib.findMatch
 import com.marcoshier.services.MediaService
 import com.marcoshier.services.RefreshService
-import com.marcoshier.types.Author
-import com.marcoshier.types.Category
-import com.marcoshier.types.Data
-import com.marcoshier.types.Project
+import com.marcoshier.services.sanitize
 import kotlinx.serialization.json.Json
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.koin.java.KoinJavaComponent.inject
 import java.io.File
 import kotlin.concurrent.thread
 
@@ -48,6 +44,7 @@ class DataService: KoinComponent {
 
         val newData = fetchAndSerialize()
         reencodeMedia(newData)
+        loadMediaInfo(newData)
 
         return newData
     }
@@ -185,6 +182,12 @@ class DataService: KoinComponent {
         }
     }
 
+    private fun loadMediaInfo(data: Data) {
+        for (project in data.projects) {
+            mediaService.loadMediaInfo(project.name.sanitize())
+        }
+    }
+
 
     fun update() {
         val newData = fetchAndSerialize()
@@ -194,6 +197,7 @@ class DataService: KoinComponent {
     fun updateWithMedia() {
         val newData = fetchAndSerialize()
         reencodeMedia(newData)
+        loadMediaInfo(newData)
         data = newData
     }
 

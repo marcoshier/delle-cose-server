@@ -2,7 +2,6 @@ package com.marcoshier.components
 
 import com.marcoshier.auth.UserSession
 import com.marcoshier.services.AuthService
-import io.ktor.server.request.uri
 import io.ktor.server.routing.RoutingContext
 import io.ktor.server.sessions.get
 import io.ktor.server.sessions.sessions
@@ -14,6 +13,7 @@ fun RoutingContext.galleryComponent(projectName: String, mediaFiles: List<File>,
 
     val session = call.sessions.get<UserSession>()
     val authService = call.application.getKoin().get<AuthService>()
+
     val isAuthenticated = session != null && authService.isSessionAuthenticated(session.sessionId)
 
     return """
@@ -83,6 +83,45 @@ fun RoutingContext.galleryComponent(projectName: String, mediaFiles: List<File>,
                     height: auto;
                     display: block;
                 }
+                .info-title {
+                    margin: 0;
+                }
+                .media-content-info p {
+                    margin: 10px 0 30px 0;
+                }
+                .media-content-info textarea {
+                    width: 100%;
+                }
+                button {
+                    margin-bottom: 20px;
+                    border: none;
+                    background: white;
+                    border: 1px solid black;
+                    color: black;
+                    padding: 15px;
+                    cursor: pointer;
+                }
+                button:hover {
+                    background: black;
+                    color: white;
+                }
+                .file-input {
+                    display: none; /* Hide the native input */
+                }
+                
+                .upload-btn {
+                    padding: 10px 20px;
+                    background: #007bff;
+                    color: white;
+                    border: none;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-family: monospace;
+                }
+                
+                .upload-btn:hover {
+                    background: #0056b3;
+                }
                 video {
                     width: 100%;
                     height: auto;
@@ -108,8 +147,30 @@ fun RoutingContext.galleryComponent(projectName: String, mediaFiles: List<File>,
                 <div class="stats">
                     <strong>Totale File:</strong> ${mediaFiles.size} 
                     (<strong>Immagini:</strong> $imageCount, <strong>Video:</strong> $videoCount)
+                    
+                      
+                ${if (isAuthenticated) """
+                <div class="upload-container" id="uploadContainer">
+                    <input type="file" id="fileInput" class="file-input" multiple accept="image/*,video/*">
+                    <button type="button" class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                        Seleziona File
+                    </button>
+                    <div class="upload-progress" id="uploadProgress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <div class="upload-status" id="uploadStatus"></div>
+                    </div>
                 </div>
+                """ else ""}
+                
+                </div>
+                
                 $mediaComponents
+                
+                if($isAuthenticated) {
+                    ${uploadScript(projectName)}
+                }
             </div>
         </body>
         </html>

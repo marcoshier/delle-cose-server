@@ -1,4 +1,4 @@
-package com.marcoshier.types
+package com.marcoshier.data
 
 import kotlinx.serialization.Serializable
 
@@ -34,7 +34,7 @@ data class Category(
 
 @Serializable
 data class MediaItems(
-    val items: List<MediaItem>
+    val items: MutableMap<String, MediaItem>
 )
 
 @Serializable
