@@ -1,5 +1,6 @@
 package com.marcoshier.lib
 
+import com.marcoshier.isProduction
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.*
 import java.io.File
@@ -26,7 +27,11 @@ fun reencodeVideo(folderName: String, videoName: String, maxHeight: Int): File {
     }
 
     val retVal = ProcessBuilder(
-        "thirdparty/ffmpeg/ffmpeg-7.1-essentials_build/ffmpeg.exe",
+        if (isProduction) {
+            "ffmpeg"
+        } else {
+            "thirdparty/ffmpeg/ffmpeg-7.1-essentials_build/ffmpeg.exe"
+        },
         "-y",
         "-i", inputFile.absolutePath,
         "-vf", "scale=-2:$maxHeight",

@@ -1,5 +1,6 @@
 package com.marcoshier.lib
 
+import com.marcoshier.isProduction
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.*
 import java.io.File
@@ -23,7 +24,11 @@ fun reencodeImage(folderName: String, imageName: String, maxHeight: Int): File {
     }
 
     val retVal = ProcessBuilder(
-        "thirdparty/im/ImageMagick-7.1.1-38-portable-Q16-x64/magick.exe",
+        if (isProduction) {
+            "magick"
+        } else {
+            "thirdparty/im/ImageMagick-7.1.1-38-portable-Q16-x64/magick.exe"
+        },
         inputFile.absolutePath,
         "-geometry",
         "x$maxHeight",

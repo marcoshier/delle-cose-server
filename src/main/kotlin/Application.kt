@@ -18,6 +18,8 @@ import org.koin.ktor.ext.getKoin
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
 
+val isProduction = System.getenv("prod") != null
+
 fun main(args: Array<String>) {
     io.ktor.server.netty.EngineMain.main(args)
 }
@@ -30,10 +32,10 @@ fun Application.module() {
 
     install(Sessions) {
         cookie<UserSession>("SESSION_ID") {
-            cookie.path = "data/cookies"
+            cookie.path = "/"
             cookie.maxAgeInSeconds = 4 * 3600
             cookie.httpOnly = true
-            cookie.secure = false
+            cookie.secure = isProduction
         }
     }
 
