@@ -55,40 +55,102 @@ fun uploadScript(projectName: String) = """
                             const totalMB = (e.total / 1024 / 1024).toFixed(1);
                             
                             progressFill.style.width = percentComplete + '%';
-                            uploadStatus.textContent = `Caricamento: Math.round(percentComplete), loadedMB}/\${'$'}{totalMB} MB)`;
+                            if(percentComplete != 100) {
+                                uploadStatus.textContent = `Caricamento:` + Math.round(percentComplete) + `% (` + loadedMB + `/` + totalMB + `) MB`;
+                            } else {
+                                uploadStatus.style.color = 'green';
+                                uploadStatus.textContent = `Conversione in corso. Non chiudere la pagina...`;
+                            }
+                            
                         }
                     });
                     
                     
-                    xhr.addEventListener('load', () => {
+                    xhr.addEventListener('load', async () => {
                         currentUpload = null;
+                        
                         if (xhr.status === 200) {
-                            progressFill.style.width = '100%';
-                            uploadStatus.textContent = 'Caricamento completato! Ricaricando la pagina...';
-                            setTimeout(() => {
-                                window.location.reload();
-                            }, 1500);
+                            try {
+                                const response = JSON.parse(xhr.responseText);
+                                
+                               
+                                if (response.error) {
+                                    progressFill.style.width = '0%';
+                                    uploadStatus.textContent = `Errore: \${'$'}{response.error}`;
+                                    uploadStatus.style.color = 'red';
+                                    setTimeout(() => {
+                                        uploadProgress.style.display = 'none';
+                                        uploadStatus.style.color = '';
+                                    }, 5000);
+                                    return;
+                                }
+                                
+                                if (response.rejectedFiles && response.rejectedFiles.length > 0) {
+                                    progressFill.style.width = '100%';
+                                    uploadStatus.textContent = `Completato con avvisi: \${'$'}{response.message}`;
+                                    uploadStatus.style.color = 'orange';
+                                    
+                                    
+                                    const rejectedInfo = response.rejectedFiles.join(', ');
+                                    setTimeout(() => {
+                                        uploadStatus.textContent = `File rifiutati: \${'$'}{rejectedInfo}`;
+                                    }, 2000);
+                                    
+                                    setTimeout(() => {
+                                        window.location.reload();
+                                    }, 5000);
+                                    return;
+                                }
+                                
+                                
+                                progressFill.style.width = '100%';
+                                uploadStatus.textContent = 'Conversione in corso. Non chiudere la pagina...';
+                                uploadStatus.style.color = 'green';
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 1500);
+                                
+                            } catch (parseError) {
+                           
+                                progressFill.style.width = '0%';
+                                uploadStatus.textContent = 'Errore: Risposta del server non valida';
+                                uploadStatus.style.color = 'red';
+                                setTimeout(() => {
+                                    uploadProgress.style.display = 'none';
+                                    uploadStatus.style.color = '';
+                                }, 5000);
+                            }
                         } else {
-                            uploadStatus.textContent = 'Errore durante il caricamento';
+                        
+                            progressFill.style.width = '0%';
+                            uploadStatus.textContent = `Errore HTTP: \${'$'}{xhr.status}`;
+                            uploadStatus.style.color = 'red';
                             setTimeout(() => {
                                 uploadProgress.style.display = 'none';
-                            }, 3000);
+                                uploadStatus.style.color = '';
+                            }, 5000);
                         }
                     });
                     
                     xhr.addEventListener('error', () => {
                         currentUpload = null;
-                        uploadStatus.textContent = 'Errore durante il caricamento';
+                        progressFill.style.width = '0%';
+                        uploadStatus.textContent = 'Errore di connessione durante il caricamento';
+                        uploadStatus.style.color = 'red';
                         setTimeout(() => {
                             uploadProgress.style.display = 'none';
-                        }, 3000);
+                            uploadStatus.style.color = '';
+                        }, 5000);
                     });
                     
                     xhr.addEventListener('abort', () => {
                         currentUpload = null;
+                        progressFill.style.width = '0%';
                         uploadStatus.textContent = 'Caricamento annullato';
+                        uploadStatus.style.color = 'orange';
                         setTimeout(() => {
                             uploadProgress.style.display = 'none';
+                            uploadStatus.style.color = '';
                         }, 3000);
                     });
                     
@@ -98,7 +160,9 @@ fun uploadScript(projectName: String) = """
                     
                 } catch (error) {
                     currentUpload = null;
+                    progressFill.style.width = '0%';
                     uploadStatus.textContent = 'Errore durante il caricamento';
+                    uploadStatus.style.color = 'red';
                     uploadProgress.style.display = 'none';
                 }
             }

@@ -27,8 +27,6 @@ fun RoutingContext.mediaComponent(file: File, folderName: String, mediaInfo: Med
     val encodedFolderName = URLEncoder.encode(folderName, StandardCharsets.UTF_8)
     val fullUrl = "$encodedFolderName/$encodedFileName"
 
-    logger.info { "full url: $fullUrl" }
-
     val mediaContent = if (file.isImageFile()) {
         """
             <img src="/image/$fullUrl" alt="${file.name}" loading="lazy">""".trimIndent()
@@ -71,6 +69,8 @@ fun RoutingContext.mediaComponent(file: File, folderName: String, mediaInfo: Med
                             <p>${mediaInfo.filename}</p>
                             <h3 class="info-title">formato:</h3>
                             <p>${mediaInfo.type}</p>
+                            <h3 class="info-title">aggiornato:</h3>
+                            <p>${mediaInfo.formattedDate}</p>
                         """.trimIndent()}}
                     </div>
                 </div>

@@ -119,6 +119,10 @@ fun RoutingContext.galleryComponent(projectName: String, mediaFiles: List<File>,
                     font-family: monospace;
                 }
                 
+                .upload-progress {
+                    margin: 0 20px;
+                }
+                
                 .upload-btn:hover {
                     background: #0056b3;
                 }
@@ -135,6 +139,17 @@ fun RoutingContext.galleryComponent(projectName: String, mediaFiles: List<File>,
                     background: white;
                     border-radius: 1px;
                     border: 1px solid black;
+                    display: flex;
+                    justify-content: space-between;
+                    flex-direction: row;
+                    align-items: center;
+                }
+                .stats button {
+                    margin: 0;
+                }
+                .upload-container {
+                    display: flex;
+                    flex-direction: row;
                 }
             </style>
         </head>
@@ -145,15 +160,17 @@ fun RoutingContext.galleryComponent(projectName: String, mediaFiles: List<File>,
                      ${if (!isAuthenticated) """<a href="/login" class="login-link">login</a>""" else """<a href="/logout" class="login-link">logout</a>"""}
                 </div>
                 <div class="stats">
-                    <strong>Totale File:</strong> ${mediaFiles.size} 
-                    (<strong>Immagini:</strong> $imageCount, <strong>Video:</strong> $videoCount)
+                    <div class="stats-item">
+                        <strong>Totale File:</strong> ${mediaFiles.size} 
+                        (<strong>Immagini:</strong> $imageCount, <strong>Video:</strong> $videoCount)
+                    </div>
                     
                       
                 ${if (isAuthenticated) """
-                <div class="upload-container" id="uploadContainer">
+                <div class="upload-container stats-item" id="uploadContainer">
                     <input type="file" id="fileInput" class="file-input" multiple accept="image/*,video/*">
                     <button type="button" class="upload-btn" onclick="document.getElementById('fileInput').click()">
-                        Seleziona File
+                        Upload
                     </button>
                     <div class="upload-progress" id="uploadProgress">
                         <div class="progress-bar">
@@ -168,9 +185,11 @@ fun RoutingContext.galleryComponent(projectName: String, mediaFiles: List<File>,
                 
                 $mediaComponents
                 
-                if($isAuthenticated) {
-                    ${uploadScript(projectName)}
+                ${if (isAuthenticated) {
+                        uploadScript(projectName)
+                    } else """"""
                 }
+                
             </div>
         </body>
         </html>

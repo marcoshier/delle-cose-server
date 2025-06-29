@@ -5,24 +5,22 @@ import com.marcoshier.data.MediaItem
 import com.marcoshier.data.MediaItems
 import com.marcoshier.lib.reencodeImage
 import com.marcoshier.lib.reencodeVideo
+import com.marcoshier.lib.sanitize
+import com.marcoshier.lib.sanitizeFileName
 import com.marcoshier.media.isImageFile
 import com.marcoshier.media.isVideoFile
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.MultiPartData
 import io.ktor.http.content.PartData
 import io.ktor.http.content.forEachPart
-import io.ktor.server.request.receiveMultipart
-import io.ktor.server.response.respond
 import io.ktor.utils.io.jvm.javaio.copyTo
+import kotlinx.datetime.Clock
 import kotlinx.serialization.json.Json
 import java.io.File
 
 private val logger = KotlinLogging.logger {  }
 
-fun String.sanitize(): String {
-    return this.replace(Regex("[<>:\"/\\\\|?*.]"), "")
-}
+
 
 class MediaService() {
 
@@ -90,8 +88,6 @@ class MediaService() {
             val mediaItemsMap = mutableMapOf<String, MediaItem>()
             val mediaInfoFolder = File("converted/$folderName")
 
-            println("converted/$folderName")
-
             val mediaFiles = mediaInfoFolder.listFiles()!!.filter { it.isFile }
 
             for (media in mediaFiles) {
@@ -99,7 +95,8 @@ class MediaService() {
                     mediaItemsMap[media.name] = MediaItem(
                         media.name,
                         "",
-                        media.extension
+                        media.extension,
+                        Clock.System.now().epochSeconds
                     )
                 }
             }
@@ -114,7 +111,36 @@ class MediaService() {
         }
     }
 
-    suspend fun upload(multipart: MultiPartData): Map<String, Any> {
+    fun updateMediaInfo(folderName: String, fileName: String) {
+
+        logger.info { "updating media info for $folderName with $fileName" }
+
+        val mediaInfoFile = File("converted/$folderName/${folderName.sanitize()}.json")
+
+        mediaInfoFile.parentFile?.mkdirs()
+
+        val mediaItems = if (mediaInfoFile.exists()) {
+            Json.decodeFromString<MediaItems>(mediaInfoFile.readText())
+        } else {
+            MediaItems(mutableMapOf())
+        }
+
+        if (!mediaItems.items.containsKey(fileName)) {
+            val file = File("media/$folderName/$fileName")
+            mediaItems.items[fileName] = MediaItem(
+                fileName,
+                "",
+                file.extension,
+                Clock.System.now().epochSeconds
+            )
+
+            val json = Json.encodeToString(mediaItems)
+            mediaInfoFile.writeText(json)
+            logger.info { "Added $fileName to media info" }
+        }
+    }
+
+    suspend fun upload(multipart: MultiPartData): Map<String, String> {
         val uploadedFiles = mutableListOf<File>()
 
         try {
@@ -125,12 +151,16 @@ class MediaService() {
                 when (part) {
                     is PartData.FormItem -> {
                         if (part.name == "folderName") {
+                            logger.info { "Received upload request for id $folderName" }
                             folderName = part.value
                         }
                     }
                     is PartData.FileItem -> {
                         if (part.name == "files") {
+
                             val fileName = part.originalFileName ?: "unknown"
+                            val sanitizedFileName = fileName.sanitizeFileName()
+
                             val allowedExtensions = setOf("jpg", "jpeg", "png", "gif", "bmp", "webp", "mp4", "mov", "avi", "mkv")
                             val fileExtension = fileName.substringAfterLast('.', "").lowercase()
 
@@ -138,7 +168,7 @@ class MediaService() {
                                 val targetFolder = File("media/${folderName?.sanitize()}")
                                 targetFolder.mkdirs()
 
-                                val targetFile = File(targetFolder, fileName.sanitize())
+                                val targetFile = File(targetFolder, sanitizedFileName)
                                 uploadedFiles.add(targetFile)
 
                                 try {
@@ -151,6 +181,8 @@ class MediaService() {
 
                                     if (tempFile.renameTo(targetFile)) {
                                         successfulUploads.add(fileName)
+                                        updateMediaInfo(folderName!!.sanitize(), sanitizedFileName)
+
                                         uploadedFiles.remove(targetFile)
                                         logger.info { "Successfully uploaded: $fileName" }
                                     } else {
@@ -170,9 +202,9 @@ class MediaService() {
             }
 
             val result = mapOf(
-                "success" to true,
+                "success" to "true",
                 "message" to "Uploaded ${successfulUploads.size} files successfully",
-                "files" to successfulUploads
+                "files" to successfulUploads.toString()
             )
             return result
 
@@ -212,7 +244,10 @@ class MediaService() {
             val json = Json.decodeFromString<MediaItems>(mediaInfoFile.readText())
             val mediaInfoItem = json.items[fileName]!!
 
-            json.items.replace(fileName, mediaInfoItem.copy(caption = newCaption))
+            json.items[fileName] = mediaInfoItem.copy(
+                caption = newCaption,
+                updatedAt = Clock.System.now().epochSeconds
+            )
 
             val newJson = Json.encodeToString(json)
             mediaInfoFile.writeText(newJson)

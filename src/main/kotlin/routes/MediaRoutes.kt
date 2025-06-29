@@ -9,7 +9,6 @@ import com.marcoshier.media.image
 import com.marcoshier.media.mediaManifest
 import com.marcoshier.media.streamVideo
 import com.marcoshier.services.MediaService
-import com.marcoshier.services.sanitize
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.PartData
 import io.ktor.http.content.forEachPart
@@ -179,9 +178,11 @@ fun Route.mediaRoutes() {
 
     post("/upload-media") {
         call.requireAuth {
-            val multipart = call.receiveMultipart()
+            val multipart = call.receiveMultipart(formFieldLimit = 1024 * 1024 * 500)
             val result = mediaService.upload(multipart)
             call.respond(result)
+
+            dataService.updateWithMedia()
         }
     }
 

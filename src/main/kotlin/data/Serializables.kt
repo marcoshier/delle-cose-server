@@ -1,5 +1,9 @@
 package com.marcoshier.data
 
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -41,5 +45,19 @@ data class MediaItems(
 data class MediaItem(
     val filename: String,
     val caption: String,
-    val type: String
-)
+    val type: String,
+    val updatedAt: Long
+) {
+
+    val formattedDate: String
+        get() = try {
+            val instant = Instant.fromEpochSeconds(updatedAt)
+            val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
+
+            "${localDateTime.dayOfWeek.name.lowercase().replaceFirstChar { it.uppercase() }}, " +
+            "${localDateTime.dayOfMonth} ${localDateTime.month.name.lowercase().replaceFirstChar { it.uppercase() }} ${localDateTime.year}," +
+            "${localDateTime.hour.toString().padStart(2, '0')}:${localDateTime.minute.toString().padStart(2, '0')}"
+        } catch (e: Exception) {
+            "Unknown"
+        }
+}

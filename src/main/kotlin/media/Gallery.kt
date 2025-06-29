@@ -40,30 +40,35 @@ suspend fun RoutingContext.gallery(projectName: String, folderPath: String, phot
 
     try {
         val mediaFiles = folder.listFiles()
-            ?.filter { file ->
-                file.isFile && ((photos && file.isImageFile()) || (videos && file.isVideoFile()))
-            }
+            ?.filter { file -> file.isFile && ((photos && file.isImageFile()) || (videos && file.isVideoFile())) }
             ?.sortedBy { it.name }
             ?: emptyList()
-
-        if (mediaFiles.isEmpty()) {
-            call.respondText(
-                noMediaComponent(),
-                ContentType.Text.Html
-            )
-            return
-        }
 
         val imageCount = mediaFiles.count { it.isImageFile() }
         val videoCount = mediaFiles.count { it.isVideoFile() }
 
         val mediaInfo = mediaService.loadMediaInfo(folder.name)
 
-        require(mediaInfo.items.size == mediaFiles.size)
 
-        val mediaComponents = mediaFiles.joinToString("\n") { file ->
-            val mediaInfoItem = mediaInfo.items[file.name]!!
-            mediaComponent(file, folder.name, mediaInfoItem)
+        val sortedMediaItems = mediaInfo.items.map {
+            it.key to it.value
+        }.sortedByDescending { it.second.updatedAt }
+
+        val mediaComponents = sortedMediaItems.joinToString("\n") { (filename, mediaInfoItem) ->
+
+            val convertedFile = File("converted/${folder.name}/$filename")
+
+            if (!convertedFile.exists()) {
+                noMediaComponent(filename)
+            } else {
+                mediaComponent(
+                    File("converted/${folder.name}/$filename"),
+                    folder.name,
+                    mediaInfoItem
+                )
+            }
+
+
         }
 
         call.respondText(
