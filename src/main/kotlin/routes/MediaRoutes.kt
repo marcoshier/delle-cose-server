@@ -18,6 +18,7 @@ import io.ktor.server.response.respond
 import io.ktor.server.response.respondRedirect
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.application
+import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.utils.io.jvm.javaio.copyTo
@@ -183,6 +184,56 @@ fun Route.mediaRoutes() {
             call.respond(result)
 
             dataService.updateWithMedia()
+        }
+    }
+
+    delete("/delete-media") {
+        call.requireAuth {
+            try {
+                val multipart = call.receiveMultipart()
+                var folderName: String? = null
+                var filename: String? = null
+
+                multipart.forEachPart { part ->
+                    if (part is PartData.FormItem) {
+                        when (part.name) {
+                            "folderName" -> folderName = part.value
+                            "filename" -> filename = part.value
+                        }
+                    }
+                    part.dispose()
+                }
+
+                if (folderName == null || filename == null) {
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        mapOf(
+                            "success" to "false",
+                            "error" to "Missing folderName or filename"
+                        )
+                    )
+                    return@requireAuth
+                }
+
+                val result = mediaService.deleteMedia(folderName, filename)
+
+                if (result["success"] == "true") {
+                    call.respond(HttpStatusCode.OK, result)
+                } else {
+                    call.respond(HttpStatusCode.BadRequest, result)
+                }
+
+            } catch (e: Exception) {
+                logger.error(e) { "Delete route failed" }
+                call.respond(
+                    HttpStatusCode.InternalServerError,
+                    mapOf(
+                        "success" to "false",
+                        "message" to "Server error",
+                        "error" to (e.message ?: "Unknown server error")
+                    )
+                )
+            }
         }
     }
 

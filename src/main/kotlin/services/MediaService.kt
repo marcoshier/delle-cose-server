@@ -255,5 +255,79 @@ class MediaService() {
         }
     }
 
+    fun deleteMedia(folderName: String, filename: String): Map<String, String> {
+        try {
+            logger.info { "Attempting to delete $filename from $folderName" }
+
+            val originalFile = File("media/$folderName/$filename")
+            val originalDeleted = if (originalFile.exists()) {
+                originalFile.delete()
+            } else {
+                logger.warn { "Original file not found: ${originalFile.absolutePath}" }
+                false
+            }
+
+            val convertedFile = File("converted/$folderName/$filename")
+            if (convertedFile.exists()) {
+                convertedFile.delete()
+            } else {
+                logger.info { "Converted file not found (ok): ${convertedFile.absolutePath}" }
+                true
+            }
+
+            val mediaInfoUpdated = removeFromMediaInfo(folderName, filename)
+
+            return if (originalDeleted && mediaInfoUpdated) {
+                logger.info { "Successfully deleted $filename from $folderName" }
+                mapOf(
+                    "success" to "true",
+                    "message" to "File deleted successfully"
+                )
+            } else {
+                logger.error { "Failed to delete $filename - original: $originalDeleted, info: $mediaInfoUpdated" }
+                mapOf(
+                    "success" to "false",
+                    "message" to "Failed to delete file completely",
+                    "error" to "Some files or metadata could not be removed"
+                )
+            }
+
+        } catch (e: Exception) {
+            logger.error(e) { "Error deleting $filename from $folderName" }
+            return mapOf(
+                "success" to "false",
+                "message" to "Delete failed",
+                "error" to (e.message ?: "Unknown error")
+            )
+        }
+    }
+
+    fun removeFromMediaInfo(folderName: String, filename: String): Boolean {
+        return try {
+            val mediaInfoFile = File("converted/$folderName/${folderName.sanitize()}.json")
+
+            if (!mediaInfoFile.exists()) {
+                logger.warn { "Media info file not found: ${mediaInfoFile.absolutePath}" }
+                return true
+            }
+
+            val mediaItems = Json.decodeFromString<MediaItems>(mediaInfoFile.readText())
+
+            if (mediaItems.items.remove(filename) != null) {
+                val json = Json.encodeToString(mediaItems)
+                mediaInfoFile.writeText(json)
+                logger.info { "Removed $filename from media info" }
+                true
+            } else {
+                logger.warn { "File $filename not found in media info" }
+                true
+            }
+
+        } catch (e: Exception) {
+            logger.error(e) { "Failed to update media info when deleting $filename" }
+            false
+        }
+    }
+
 
 }

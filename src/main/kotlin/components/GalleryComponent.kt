@@ -151,6 +151,31 @@ fun RoutingContext.galleryComponent(projectName: String, mediaFiles: List<File>,
                     display: flex;
                     flex-direction: row;
                 }
+                .delete-btn {
+                    background: #dc3545;
+                    color: white;
+                    border: none;
+                    padding: 5px 8px;
+                    border-radius: 3px;
+                    cursor: pointer;
+                    margin-left: 10px;
+                    font-size: 14px;
+                }
+
+                .delete-btn:hover {
+                    background: #c82333;
+                }
+
+                .media-info {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+
+                .media-item.deleting {
+                    opacity: 0.5;
+                    pointer-events: none;
+                }
             </style>
         </head>
         <body>

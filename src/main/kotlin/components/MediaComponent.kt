@@ -44,6 +44,11 @@ fun RoutingContext.mediaComponent(file: File, folderName: String, mediaInfo: Med
                 <div class="media-title">${file.name}</div>
                 <div class="media-info">
                     Size: ${formatFileSize(file.length())}
+                    ${if (isAuthenticated) """
+                    <button class="delete-btn" onclick="deleteMedia('$folderName', '${mediaInfo.filename}')" title="Delete file">
+                        Elimina
+                    </button>
+                """ else ""}
                 </div>
                 <div class="media-content-wrapper">
                     <div class="media-content-item media-content">

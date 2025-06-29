@@ -166,6 +166,72 @@ fun uploadScript(projectName: String) = """
                     uploadProgress.style.display = 'none';
                 }
             }
+           async function deleteMedia(folderName, filename) {
+                if (!confirm(`Sei sicuro di voler eliminare? Questa azione non può essere annullata.`)) {
+                    return;
+                }
+                
+                const mediaItemId = 'media-' + filename.replace(/[^a-zA-Z0-9]/g, '_');
+                const mediaItem = document.getElementById(mediaItemId);
+                
+                try {
+                    // Show loading state
+                    if (mediaItem) {
+                        mediaItem.classList.add('deleting');
+                    }
+                    
+                    // Use FormData instead of JSON
+                    const formData = new FormData();
+                    formData.append('folderName', folderName);
+                    formData.append('filename', filename);
+                    
+                    const response = await fetch('/delete-media', {
+                        method: 'DELETE',
+                        body: formData  // No Content-Type header needed
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok && result.success === "true") {
+                        // Remove the item from DOM with animation
+                        if (mediaItem) {
+                            mediaItem.style.transition = 'opacity 0.3s ease';
+                            mediaItem.style.opacity = '0';
+                            setTimeout(() => {
+                                mediaItem.remove();
+                            }, 300);
+                        }
+                        
+                        // Update stats
+                        updateMediaStats();
+                        
+                    } else {
+                        // Remove loading state
+                        if (mediaItem) {
+                            mediaItem.classList.remove('deleting');
+                        }
+                        alert(`Errore durante l'eliminazione`);
+                    }
+                    
+                } catch (error) {
+                    // Remove loading state
+                    if (mediaItem) {
+                        mediaItem.classList.remove('deleting');
+                    }
+                    alert('Errore di connessione durante l\'eliminazione');
+                    console.error('Delete error:', error);
+                }
+            }
+            
+            function updateMediaStats() {
+                const remainingItems = document.querySelectorAll('.media-item:not(.deleting)').length;
+                const statsElement = document.querySelector('.stats');
+                if (statsElement) {
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                }
+            }
             
        
             function cancelUpload() {
