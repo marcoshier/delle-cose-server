@@ -1,14 +1,13 @@
 package com.marcoshier.services
 
-import com.marcoshier.components.logger
 import com.marcoshier.data.MediaItem
 import com.marcoshier.data.MediaItems
+import com.marcoshier.lib.isImageFile
+import com.marcoshier.lib.isVideoFile
 import com.marcoshier.lib.reencodeImage
 import com.marcoshier.lib.reencodeVideo
 import com.marcoshier.lib.sanitize
 import com.marcoshier.lib.sanitizeFileName
-import com.marcoshier.media.isImageFile
-import com.marcoshier.media.isVideoFile
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.content.MultiPartData
 import io.ktor.http.content.PartData
@@ -19,8 +18,6 @@ import kotlinx.serialization.json.Json
 import java.io.File
 
 private val logger = KotlinLogging.logger {  }
-
-
 
 class MediaService() {
 
@@ -45,7 +42,7 @@ class MediaService() {
         val files = mediaFolder.listFiles().filter { it.isFile }
 
         for (file in files) {
-            if (file.isVideoFile()) {
+            if (file.isVideoFile) {
                 reencodeVideo(nameRef!!, file.name, 1080)
             } else {
                 reencodeImage(nameRef!!, file.name, 1080)
@@ -91,7 +88,7 @@ class MediaService() {
             val mediaFiles = mediaInfoFolder.listFiles()!!.filter { it.isFile }
 
             for (media in mediaFiles) {
-                if (media.isImageFile() || media.isVideoFile()) {
+                if (media.isImageFile || media.isVideoFile) {
                     mediaItemsMap[media.name] = MediaItem(
                         media.name,
                         "",

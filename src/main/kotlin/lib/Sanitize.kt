@@ -9,7 +9,6 @@ fun String.sanitizeFileName(): String {
     val lastDotIndex = this.lastIndexOf('.')
 
     return if (lastDotIndex > 0) {
-        // Has extension
         val name = this.substring(0, lastDotIndex)
         val extension = this.substring(lastDotIndex + 1)
 
@@ -18,7 +17,6 @@ fun String.sanitizeFileName(): String {
 
         "$sanitizedName.$sanitizedExtension"
     } else {
-        // No extension
         this.replace(Regex("[<>:\"/\\\\|?*.]"), "_")
     }
 }

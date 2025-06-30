@@ -17,6 +17,7 @@ data class Data (
 data class Project(
     val name: String,
     val year: Int? = null,
+    val description: String = "",
     val authors: List<Int>,
     val categories: List<Int>,
     val partner: String,
@@ -61,3 +62,18 @@ data class MediaItem(
             "Unknown"
         }
 }
+
+@Serializable
+data class MediaFile(
+    val path: String,
+    val type: String,
+    val caption: String = "",
+)
+
+@Serializable
+data class MediaFolderResponse(
+    val folder: String,
+    val totalFiles: Int,
+    val images: List<MediaFile>,
+    val videos: List<MediaFile>
+)

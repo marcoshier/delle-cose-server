@@ -7,12 +7,12 @@ import io.ktor.server.sessions.get
 import io.ktor.server.sessions.sessions
 import org.koin.ktor.ext.getKoin
 
-suspend fun ApplicationCall.requireAuth(block: suspend () -> Unit) {
-    val authService = getKoin().get<AuthService>()
-    val session = sessions.get<UserSession>()
+suspend fun requireAuth(call: ApplicationCall, block: suspend () -> Unit) {
+    val authService = call.getKoin().get<AuthService>()
+    val session = call.sessions.get<UserSession>()
 
     if (session == null || !authService.isSessionAuthenticated(session.sessionId)) {
-        respondRedirect("/login")
+        call.respondRedirect("/login")
         return
     }
 

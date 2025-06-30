@@ -1,5 +1,9 @@
 package com.marcoshier.media
 
+import com.marcoshier.data.MediaFile
+import com.marcoshier.data.MediaFolderResponse
+import com.marcoshier.lib.isImageFile
+import com.marcoshier.lib.isVideoFile
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.response.respond
@@ -13,25 +17,10 @@ import kotlin.math.log
 
 private val logger = KotlinLogging.logger { }
 
-@Serializable
-data class MediaFile(
-    val path: String,
-    val type: String,
-    val caption: String = "",
-)
-
-@Serializable
-data class MediaFolderResponse(
-    val folder: String,
-    val totalFiles: Int,
-    val images: List<MediaFile>,
-    val videos: List<MediaFile>
-)
-
 fun File.getMediaType(): String? {
     return when {
-        isImageFile() -> "image"
-        isVideoFile() -> "video"
+        isImageFile -> "image"
+        isVideoFile -> "video"
         else -> null
     }
 }
@@ -48,7 +37,7 @@ suspend fun RoutingContext.mediaManifest(folderPath: String) {
     try {
         val mediaFiles = folder.listFiles()
             ?.filter { file ->
-                file.isFile && (file.isImageFile() || file.isVideoFile())
+                file.isFile && (file.isImageFile || file.isVideoFile)
             }
             ?.map { file ->
 

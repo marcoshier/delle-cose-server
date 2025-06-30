@@ -16,45 +16,15 @@ fun Application.routes() {
 
     routing {
 
+        authRoutes()
+
+        apiRoutes()
+
+        mediaRoutes()
+
 
         get("/") {
             call.respond(dataService.data)
-        }
-
-
-        get("/progetti") {
-            call.respond(dataService.projects)
-        }
-
-        get("/categorie") {
-            call.respond(dataService.categories)
-        }
-
-        get("/autori") {
-            call.respond(dataService.authors)
-        }
-
-
-        get("/progetto/{query}") {
-            val query = call.parameters["query"]
-            val project = query?.let { dataService.getProject(query) }
-
-            if (project == null) {
-                call.respond("Non ho trovato un progetto con nome simile a $query")
-            } else {
-                call.respond(project)
-            }
-        }
-
-        get("/autore/{query}") {
-            val query = call.parameters["query"]
-            val author = query?.let { dataService.getAuthor(query) }
-
-            if (author == null) {
-                call.respond("Non ho trovato un autore con nome simile a $query")
-            } else {
-                call.respond(author)
-            }
         }
 
         get("/update") {
@@ -66,17 +36,9 @@ fun Application.routes() {
             }
         }
 
-
         get("/404") {
             call.respond(HttpStatusCode.NotFound)
         }
-
-
-        authRoutes()
-
-        mediaRoutes()
-
-
 
     }
 }

@@ -15,7 +15,7 @@ import java.io.FileInputStream
 
 private val logger = KotlinLogging.logger {  }
 
-fun getVideoFile(file: File): File? {
+private fun getVideoFile(file: File): File? {
     if (!file.exists()) {
         logger.info { "Video does not exist" }
         return null

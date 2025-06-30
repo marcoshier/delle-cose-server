@@ -3,7 +3,7 @@ package com.marcoshier.components
 import io.ktor.server.routing.RoutingContext
 
 
-fun RoutingContext.loginComponent(redirectUrl: String? = null) = """
+fun loginComponent(redirectUrl: String? = null) = """
      <!DOCTYPE html>
         <html>
         <head>

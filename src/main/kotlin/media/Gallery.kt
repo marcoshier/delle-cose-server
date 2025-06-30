@@ -3,6 +3,9 @@ package com.marcoshier.media
 import com.marcoshier.components.galleryComponent
 import com.marcoshier.components.mediaComponent
 import com.marcoshier.components.noMediaComponent
+import com.marcoshier.lib.isImageFile
+import com.marcoshier.lib.isVideoFile
+import com.marcoshier.pages.errorPage
 import com.marcoshier.services.MediaService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.ContentType
@@ -14,18 +17,6 @@ import org.koin.ktor.ext.getKoin
 import java.io.File
 
 private val logger = KotlinLogging.logger { }
-
-
-private val imageExtensions = setOf("jpg", "jpeg", "png", "gif", "bmp", "webp", "svg", "tiff")
-private val videoExtensions = setOf("mp4", "avi", "mov", "wmv", "flv", "webm", "mkv", "m4v", "3gp")
-
-fun File.isImageFile(): Boolean {
-    return this.extension.lowercase() in imageExtensions
-}
-
-fun File.isVideoFile(): Boolean {
-    return this.extension.lowercase() in videoExtensions
-}
 
 suspend fun RoutingContext.gallery(projectName: String, folderPath: String, photos: Boolean = true, videos: Boolean = true) {
     val mediaService = call.application.getKoin().get<MediaService>()
@@ -40,12 +31,12 @@ suspend fun RoutingContext.gallery(projectName: String, folderPath: String, phot
 
     try {
         val mediaFiles = folder.listFiles()
-            ?.filter { file -> file.isFile && ((photos && file.isImageFile()) || (videos && file.isVideoFile())) }
+            ?.filter { file -> file.isFile && ((photos && file.isImageFile) || (videos && file.isVideoFile)) }
             ?.sortedBy { it.name }
             ?: emptyList()
 
-        val imageCount = mediaFiles.count { it.isImageFile() }
-        val videoCount = mediaFiles.count { it.isVideoFile() }
+        val imageCount = mediaFiles.count { it.isImageFile }
+        val videoCount = mediaFiles.count { it.isVideoFile }
 
         val mediaInfo = mediaService.loadMediaInfo(folder.name)
 
@@ -55,10 +46,9 @@ suspend fun RoutingContext.gallery(projectName: String, folderPath: String, phot
         }.sortedByDescending { it.second.updatedAt }
 
         val mediaComponents = sortedMediaItems.joinToString("\n") { (filename, mediaInfoItem) ->
-
             val convertedFile = File("converted/${folder.name}/$filename")
 
-            if (!convertedFile.exists()) {
+            if (!convertedFile.exists()) { // TODO multithreaded ffmpeg progress
                 noMediaComponent(filename)
             } else {
                 mediaComponent(
@@ -67,8 +57,6 @@ suspend fun RoutingContext.gallery(projectName: String, folderPath: String, phot
                     mediaInfoItem
                 )
             }
-
-
         }
 
         call.respondText(
@@ -82,19 +70,12 @@ suspend fun RoutingContext.gallery(projectName: String, folderPath: String, phot
 
     } catch (e: Exception) {
         logger.error(e) { "Error reading media folder: $folderPath" }
+
         call.respondText(
-            """
-            <!DOCTYPE html>
-            <html>
-            <head><title>Error</title></head>
-            <body>
-                <h1>Error</h1>
-                <p>Unable to load media folder. -${e.printStackTrace()}</p>
-            </body>
-            </html>
-            """.trimIndent(),
+            errorPage("Unable to load media folder. <br /> ${e.printStackTrace()}"),
             ContentType.Text.Html,
             HttpStatusCode.InternalServerError
         )
+
     }
 }

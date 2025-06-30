@@ -8,7 +8,7 @@ import java.io.File
 
 private val logger = KotlinLogging.logger {  }
 
-fun getImageFile(file: File): File? {
+private fun getImageFile(file: File): File? {
     if (!file.exists()) {
         logger.info { "Image does not exist" }
         return null

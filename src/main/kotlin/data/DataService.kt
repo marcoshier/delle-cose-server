@@ -1,16 +1,18 @@
 package com.marcoshier.data
 
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
-import com.marcoshier.components.logger
 import com.marcoshier.lib.findMatch
 import com.marcoshier.lib.sanitize
 import com.marcoshier.services.MediaService
 import com.marcoshier.services.RefreshService
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.serialization.json.Json
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.io.File
 import kotlin.concurrent.thread
+
+private val logger = KotlinLogging.logger {  }
 
 class DataService: KoinComponent {
     private val googleService by inject<GoogleSheetsService>()
@@ -114,6 +116,7 @@ class DataService: KoinComponent {
             Project(
                 it["PROGETTI"]!!,
                 it["ANNO"]?.toIntOrNull() ?: 9999,
+                it["DESCRIZIONI"] ?: "",
                 parseAuthorNames(it["AUTORI"]!!).map {
                     authorNames.indexOf(it)
                 }.sorted(),
