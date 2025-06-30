@@ -21,19 +21,19 @@ fun RoutingContext.mediaComponent(file: File, folderName: String, mediaInfo: Med
     val authService = call.application.getKoin().get<AuthService>()
 
     val isAuthenticated = session != null && authService.isSessionAuthenticated(session.sessionId)
-
     val encodedFileName = URLEncoder.encode(file.name, StandardCharsets.UTF_8)
     val encodedFolderName = URLEncoder.encode(folderName, StandardCharsets.UTF_8)
+
     val fullUrl = "$encodedFolderName/$encodedFileName"
 
     val mediaContent = if (file.isImageFile) {
         """
-            <img src="/image/$fullUrl" alt="${file.name}" loading="lazy">
+            <img src="/api/image/$fullUrl" alt="${file.name}" loading="lazy">
         """.trimIndent()
     } else {
         """
         <video controls preload="metadata">
-            <source src="/video/$fullUrl" type="video/${file.extension}">
+            <source src="/api/video/$fullUrl" type="video/${file.extension}">
             Your browser does not support the video tag.
         </video>
         """.trimIndent()
