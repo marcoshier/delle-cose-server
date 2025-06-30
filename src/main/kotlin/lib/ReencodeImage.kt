@@ -11,7 +11,7 @@ fun reencodeImage(folderName: String, imageName: String, maxHeight: Int): File {
     val outputFile = File(convertedPath)
 
     if (outputFile.exists()) {
-        //logger.info { "image already exist, skipping resize" }
+        logger.info { "image already exist, skipping resize" }
         return outputFile
     }
 
@@ -25,7 +25,7 @@ fun reencodeImage(folderName: String, imageName: String, maxHeight: Int): File {
 
     val retVal = ProcessBuilder(
         if (isProduction) {
-            "magick"
+            "convert"
         } else {
             "thirdparty/im/ImageMagick-7.1.1-38-portable-Q16-x64/magick.exe"
         },
