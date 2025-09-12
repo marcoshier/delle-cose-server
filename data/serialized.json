@@ -3,6 +3,7 @@
         {
             "name": "I LOVE MY LAND",
             "year": 2024,
+            "description": "Lorèm ipsèm, uè frate, sòle parole a casë, ma vanne bbòne pe rièmpie nu spazie quanne nce stà nudd da scrìve. Stu fatte ca ce stè scrivènne accussì, pare serie, ma iè pe fà vedé cum jèsce quacche cosë scrìttë.\n\nQuanne ié fatte nu testë, nun vuè che ce stà u biancu — e allore ti mettë stu cosë, ca sembë latine, ma iè tutt quande n’pòvere frasë mischiate, senz’ u significate.\n\nMa ié bbòne pe quacche progette grafiche, o quanne vuè vedé cume vene quacche paggine, prima de scrivë davverë. Lorèm ipsëm, sì, ma nù sapìm manco ce vol dì!",
             "authors": [
                 0,
                 1,
@@ -14,7 +15,7 @@
                 0
             ],
             "partner": "KABK",
-            "location": "ITALIA: MAUL! CASTELLO CONTEMPORANEO, SPAZIO ALELAIE - OLANDA: ROYAL ACADEMY OF ART - NEST"
+            "location": ""
         },
         {
             "name": "FOR REAL NOT FOR ART",
@@ -28,7 +29,7 @@
                 1
             ],
             "partner": "",
-            "location": "ITALIA: MAUL! CASTELLO CONTEMPORANEO, SPAZIO ALELAIE - OLANDA: ROYAL ACADEMY OF ART - NEST"
+            "location": ""
         },
         {
             "name": "INCANTO (FULL MOON)",
@@ -41,7 +42,7 @@
                 1
             ],
             "partner": "GOODMESH CONTEST",
-            "location": "OLANDA: HET CONCERTGEBOUW Het Concertgebouw . Goodmesh Contest - Full Moon 2nd Prize: € 3.000,- plus International Press Exposure, professional photo shoot and video recording \nAudience Prize: € 1.000,- plus International Press Exposure, professional photo shoot and video recording. "
+            "location": ""
         },
         {
             "name": "BLOOD OF THAT LAND",
@@ -53,7 +54,7 @@
                 0
             ],
             "partner": "",
-            "location": "ITALIA: MAUL! CATELLO CONTEMPORANEO"
+            "location": ""
         },
         {
             "name": "INFINITE HOTEL",
@@ -67,7 +68,7 @@
                 0
             ],
             "partner": "",
-            "location": "CON.DIVISIONE RESIDENZA"
+            "location": ""
         },
         {
             "name": "HOTEL",
@@ -80,7 +81,7 @@
                 0
             ],
             "partner": "",
-            "location": "CON.DIVISIONE RESIDENZA"
+            "location": ""
         },
         {
             "name": "IO ODIO GLI INDIFFERENTI",
@@ -96,7 +97,7 @@
                 1
             ],
             "partner": "",
-            "location": "CON.DIVISIONE RESIDENZA + SPAZIO ALELAIE"
+            "location": ""
         },
         {
             "name": "CON.DIVISIONE 9",
@@ -111,7 +112,7 @@
                 3
             ],
             "partner": "",
-            "location": "ITALIA: MOLA DI BARI"
+            "location": ""
         },
         {
             "name": "CON.DIVISIONE 8",
@@ -125,7 +126,7 @@
                 3
             ],
             "partner": "",
-            "location": "ITALIA: MOLA DI BARI"
+            "location": ""
         },
         {
             "name": "CON.DIVISIONE 10",
@@ -140,7 +141,7 @@
                 4
             ],
             "partner": "SOS - OFFICINA DELL'ARTE APS",
-            "location": "ITALIA: MOLA DI BARI / Mad Festival, Berna, Svizzera, 2023\nEsibizione del progetto editoriale e di ricerca visiva sul territorio di Mola\ndi Bari, “XYZ-Mezzogiorno di Fuoco a Con.divisione 10”."
+            "location": ""
         },
         {
             "name": "PSICO.PATOS EXHIBITION",
@@ -156,7 +157,7 @@
                 3
             ],
             "partner": "",
-            "location": "ITALIA: SANNICANDRO DI BARI"
+            "location": ""
         },
         {
             "name": "FUOCHI X MCZEE",
@@ -170,7 +171,7 @@
                 2
             ],
             "partner": "",
-            "location": "ITALIA: MONTECASSIANO"
+            "location": ""
         },
         {
             "name": "SISTEMA NEXUS",
@@ -185,7 +186,7 @@
                 5
             ],
             "partner": "",
-            "location": "MULTIPLE LOCATION"
+            "location": ""
         },
         {
             "name": "MAKING, LAYOUT, RITMI, SEQUENZE",
@@ -199,7 +200,7 @@
                 6
             ],
             "partner": "OFFICINA DELL'ARTE APS",
-            "location": "MAUL! CASTELLO CONTEMPORANEO"
+            "location": ""
         },
         {
             "name": "FOCAREDIO",
@@ -214,7 +215,7 @@
                 2
             ],
             "partner": "",
-            "location": "VILLA LITTORIO PARCO NAZIONALE DEL CILENTO"
+            "location": ""
         },
         {
             "name": "CON.DIVISIONE 11",
@@ -228,7 +229,7 @@
                 3
             ],
             "partner": "",
-            "location": "MOLA DI BARI"
+            "location": ""
         },
         {
             "name": "IMPIANTECNICA SRL",
@@ -270,7 +271,7 @@
                 6
             ],
             "partner": "UNIVERSITA DESIGN ASCOLI - SAADWORKSHOP",
-            "location": "UNIVERSITA DESIGN ASCOLI PICENO"
+            "location": ""
         },
         {
             "name": "TRAGITT",
@@ -283,7 +284,7 @@
                 6
             ],
             "partner": "SOS",
-            "location": "MAUL! SOS"
+            "location": ""
         },
         {
             "name": "FOCARE 7",
@@ -297,11 +298,11 @@
                 4
             ],
             "partner": "",
-            "location": "VILLA LITTORIO PARCO NAZIONALE DEL CILENTO"
+            "location": ""
         },
         {
             "name": "GROUND TRUTHING",
-            "year": 9999,
+            "year": 2024,
             "authors": [
                 0,
                 3,
@@ -311,7 +312,7 @@
                 0
             ],
             "partner": "",
-            "location": "CON.DIVISIONE"
+            "location": ""
         },
         {
             "name": "DEMONACO",
@@ -337,7 +338,7 @@
                 2
             ],
             "partner": "",
-            "location": "VENEZIA"
+            "location": ""
         },
         {
             "name": "TUTTO IN UNA STANZA",
@@ -351,7 +352,7 @@
                 0
             ],
             "partner": "OFFICINA DELL'ARTE APS",
-            "location": "MAUL!"
+            "location": ""
         },
         {
             "name": "TUFO DEL SUONO",
@@ -365,7 +366,7 @@
                 1
             ],
             "partner": "MAUL! IL CASTELLO CONTEMPORANEO",
-            "location": "MAUL!"
+            "location": ""
         },
         {
             "name": "PIETRE RARE",
@@ -378,7 +379,7 @@
                 0
             ],
             "partner": "",
-            "location": "CON.DIVISIONE"
+            "location": ""
         },
         {
             "name": "CON.DIVISIONE 12",
@@ -393,7 +394,7 @@
                 4
             ],
             "partner": "",
-            "location": "MOLA DI BARI"
+            "location": ""
         },
         {
             "name": "CON.DIVISIONE 13",
@@ -408,7 +409,7 @@
                 4
             ],
             "partner": "",
-            "location": "MOLA DI BARI"
+            "location": ""
         },
         {
             "name": "SPROLOQUIO CURATORIALE",
@@ -423,7 +424,7 @@
                 1
             ],
             "partner": "",
-            "location": "CON.DIVISIONE"
+            "location": ""
         },
         {
             "name": "FROM SHADOW",
@@ -435,7 +436,7 @@
                 1
             ],
             "partner": "OFF LAB - DUTCH NATION OPERA",
-            "location": "DUTCH NATIONAL OPERA AMSTERDAM - SONIC SLEEP DEN HAAG"
+            "location": ""
         },
         {
             "name": "OFF LAB",
@@ -447,7 +448,7 @@
                 1
             ],
             "partner": "OFF LAB - VAN EESTEREN MUSEUM",
-            "location": "VAN EESTEREN MUSEUM AMSTERDAM"
+            "location": ""
         },
         {
             "name": "SONIC SLEEP SCENOGRAPHY",
@@ -461,7 +462,7 @@
                 3
             ],
             "partner": "",
-            "location": "DEN HAAG"
+            "location": ""
         },
         {
             "name": "TRADERE",
@@ -475,7 +476,7 @@
                 1
             ],
             "partner": "",
-            "location": "ITALIA: IGNOTI ALLA CITTA, SALENTO AREA. OLANDA: QUARTAIR"
+            "location": ""
         },
         {
             "name": "SECONDO JOHN CAGE?",
@@ -487,7 +488,7 @@
                 6
             ],
             "partner": "UNIRSM - USAMRADIO",
-            "location": "SAN MARINO"
+            "location": ""
         },
         {
             "name": "IMMANENTS",
@@ -500,7 +501,7 @@
                 6
             ],
             "partner": "SOS",
-            "location": "MOLA DI BARI"
+            "location": ""
         },
         {
             "name": "15SEC RELFECT",
@@ -513,7 +514,7 @@
                 0
             ],
             "partner": "OFFICINA DELL'ARTE APS",
-            "location": "MOLA DI BARI"
+            "location": ""
         },
         {
             "name": "WHAT IF?",
@@ -526,7 +527,7 @@
                 0
             ],
             "partner": "",
-            "location": "GREY SPACE IN THE MIDDLE DEN HAAG"
+            "location": ""
         },
         {
             "name": "TRACCEDERIVE",
@@ -539,7 +540,7 @@
                 6
             ],
             "partner": "FOCARE",
-            "location": "VILLA LITTORIO PARCO NAZIONALE DEL CILENTO"
+            "location": ""
         },
         {
             "name": "LA FORZA: MOSTRO",
@@ -552,7 +553,7 @@
                 2
             ],
             "partner": "",
-            "location": "LAB.FORMENTINI MILANO"
+            "location": ""
         },
         {
             "name": "HELLO WORLD?",
@@ -566,7 +567,7 @@
                 1
             ],
             "partner": "",
-            "location": "GREY SPACE IN THE MIDDLE DEN HAAG"
+            "location": ""
         },
         {
             "name": "OSPITI A MOLA",
@@ -625,7 +626,7 @@
                 4
             ],
             "partner": "",
-            "location": "MAUL! IL CASTELLO CONTEMPORANEO"
+            "location": ""
         },
         {
             "name": "MUTAZIONI",
@@ -639,7 +640,7 @@
                 3
             ],
             "partner": "",
-            "location": "MOLA DI BARI"
+            "location": ""
         },
         {
             "name": "CON.DIVISIONE RESIDENZA",
@@ -680,7 +681,7 @@
                 0
             ],
             "partner": "",
-            "location": "CON.DIVISIONE"
+            "location": ""
         },
         {
             "name": "ENCONTROS PERIGOSOS",
@@ -693,7 +694,7 @@
                 1
             ],
             "partner": "",
-            "location": "CON.DIVISIONE"
+            "location": ""
         },
         {
             "name": "BEBER DEL MEDITERRANEO",
@@ -706,7 +707,7 @@
                 1
             ],
             "partner": "",
-            "location": "CON.DIVISIONE"
+            "location": ""
         },
         {
             "name": "ECATE ASS.CULTURALE",

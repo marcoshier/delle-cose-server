@@ -7,6 +7,7 @@ import com.marcoshier.media.gallery
 import com.marcoshier.media.image
 import com.marcoshier.media.mediaManifest
 import com.marcoshier.media.streamVideo
+import com.marcoshier.services.MediaProcessingService
 import com.marcoshier.services.MediaService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.HttpStatusCode
@@ -22,16 +23,20 @@ import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.utils.io.jvm.javaio.copyTo
+import org.koin.core.component.inject
 import org.koin.ktor.ext.getKoin
+import org.koin.ktor.ext.inject
 import java.io.File
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
+import kotlin.getValue
 
 private val logger = KotlinLogging.logger {  }
 
 fun Route.mediaRoutes() {
     val dataService = application.getKoin().get<DataService>()
     val mediaService = application.getKoin().get<MediaService>()
+    val mediaProcessingService = application.getKoin().get<MediaProcessingService>()
 
     val mediaFolders = File("media/").listFiles().filter { it.isDirectory }
 
@@ -84,6 +89,29 @@ fun Route.mediaRoutes() {
             call.respond(result)
 
             dataService.updateWithMedia()
+        }
+    }
+
+    get("/media-processing-status") {
+        requireAuth(call) {
+            val processingProjects: List<String> = mediaProcessingService.getAllProcessingProjects()
+            println(processingProjects)
+            call.respond(processingProjects)
+        }
+    }
+
+    post("/cancel-processing/{projectName}") {
+        requireAuth(call) {
+            val projectName = call.parameters["projectName"]
+            if (projectName != null) {
+                val cancelled = mediaProcessingService.cancelProcessing(projectName)
+                call.respond(mapOf(
+                    "success" to cancelled,
+                    "message" to if (cancelled) "Processing cancelled" else "No active processing found"
+                ))
+            } else {
+                call.respond(HttpStatusCode.BadRequest, "Missing project name")
+            }
         }
     }
 

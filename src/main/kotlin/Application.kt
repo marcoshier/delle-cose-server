@@ -6,6 +6,7 @@ import com.marcoshier.data.GoogleSheetsService
 import com.marcoshier.data.LocalService
 import com.marcoshier.routes.routes
 import com.marcoshier.services.AuthService
+import com.marcoshier.services.MediaProcessingService
 import com.marcoshier.services.MediaService
 import com.marcoshier.services.RefreshService
 import io.ktor.serialization.kotlinx.json.*
@@ -46,6 +47,7 @@ fun Application.module() {
             module {
                 single { DataService() }
                 single { MediaService() }
+                single { MediaProcessingService() }
             },
             module {
                 single { GoogleSheetsService() }

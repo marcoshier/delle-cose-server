@@ -148,8 +148,8 @@ class MediaService() {
                 when (part) {
                     is PartData.FormItem -> {
                         if (part.name == "folderName") {
-                            logger.info { "Received upload request for id $folderName" }
                             folderName = part.value
+                            logger.info { "Received upload request for id $folderName" }
                         }
                     }
                     is PartData.FileItem -> {

@@ -3,6 +3,7 @@ package com.marcoshier.data
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import com.marcoshier.lib.findMatch
 import com.marcoshier.lib.sanitize
+import com.marcoshier.services.MediaProcessingService
 import com.marcoshier.services.MediaService
 import com.marcoshier.services.RefreshService
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -18,6 +19,7 @@ class DataService: KoinComponent {
     private val googleService by inject<GoogleSheetsService>()
     private val localService by inject<LocalService>()
     private val mediaService by inject<MediaService>()
+    private val mediaProcessingService by inject<MediaProcessingService>()
     private val refreshService by inject<RefreshService>()
 
 
@@ -198,10 +200,13 @@ class DataService: KoinComponent {
     }
 
     fun updateWithMedia() {
+
         val newData = fetchAndSerialize()
-        reencodeMedia(newData)
-        loadMediaInfo(newData)
         data = newData
+
+        for (project in newData.projects) {
+            mediaProcessingService.processMedia(project.name)
+        }
     }
 
 
