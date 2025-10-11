@@ -8,7 +8,7 @@ import java.io.File
 private val logger = KotlinLogging.logger {  }
 
 fun reencodeVideo(folderName: String, videoName: String, maxHeight: Int): File {
-    val convertedPath = "converted/$folderName/$videoName"
+    val convertedPath = "converted/$folderName/${videoName.drop(3)}mp4"
     val outputFile = File(convertedPath)
 
     if (outputFile.exists()) {
