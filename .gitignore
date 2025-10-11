@@ -43,3 +43,4 @@ data/StoredCredential
 /magick.error.txt
 /src/main/kotlin/auth/Hash.kt
 /src/main/kotlin/utils/
+/logs/
