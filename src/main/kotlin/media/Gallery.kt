@@ -46,13 +46,14 @@ suspend fun RoutingContext.gallery(projectName: String, folderPath: String, phot
         }.sortedByDescending { it.second.updatedAt }
 
         val mediaComponents = sortedMediaItems.joinToString("\n") { (filename, mediaInfoItem) ->
-            val convertedFile = File("converted/${folder.name}/$filename")
+            val convertedFile = File("converted/${folder.name}/${filename.dropLast(4)}.mp4")
 
             if (!convertedFile.exists()) { // TODO multithreaded ffmpeg progress
+                println("not found ${convertedFile.path}")
                 noMediaComponent(filename)
             } else {
                 mediaComponent(
-                    File("converted/${folder.name}/$filename"),
+                    convertedFile,
                     folder.name,
                     mediaInfoItem
                 )
