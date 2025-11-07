@@ -21,7 +21,8 @@ data class Project(
     val authors: List<Int>,
     val categories: List<Int>,
     val partner: String,
-    val location: String
+    val location: String,
+    val slug: String
 )
 
 @Serializable

@@ -44,3 +44,4 @@ data/StoredCredential
 /src/main/kotlin/auth/Hash.kt
 /src/main/kotlin/utils/
 /logs/
+/ffmpeg.error.txt

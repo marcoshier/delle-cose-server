@@ -11,6 +11,7 @@ import kotlinx.serialization.json.Json
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.io.File
+import java.net.URLDecoder
 import kotlin.concurrent.thread
 
 private val logger = KotlinLogging.logger {  }
@@ -115,6 +116,12 @@ class DataService: KoinComponent {
                 return if (value.isNullOrEmpty()) "" else value
             }
 
+            fun parseSlug(name: String): String {
+                return URLDecoder.decode(name, "UTF-8")
+                    .lowercase()
+                    .replace(Regex("[^a-z0-9]"), "")
+            }
+
             Project(
                 it["PROGETTI"]!!,
                 it["ANNO"]?.toIntOrNull() ?: 9999,
@@ -126,7 +133,8 @@ class DataService: KoinComponent {
                     categoryNames.indexOf(it)
                 }.sorted(),
                 getPartner(),
-                getLocation()
+                getLocation(),
+                parseSlug(it["PROGETTI"]!!)
             )
         }
 
