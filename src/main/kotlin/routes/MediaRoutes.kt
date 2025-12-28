@@ -95,7 +95,6 @@ fun Route.mediaRoutes() {
     get("/media-processing-status") {
         requireAuth(call) {
             val processingProjects: List<String> = mediaProcessingService.getAllProcessingProjects()
-            println(processingProjects)
             call.respond(processingProjects)
         }
     }

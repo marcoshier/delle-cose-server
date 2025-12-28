@@ -2,6 +2,7 @@ package com.marcoshier.services
 
 import com.marcoshier.data.MediaItem
 import com.marcoshier.data.MediaItems
+import com.marcoshier.lib.generateThumbnails
 import com.marcoshier.lib.isImageFile
 import com.marcoshier.lib.isVideoFile
 import com.marcoshier.lib.reencodeImage
@@ -50,6 +51,29 @@ class MediaService() {
         }
     }
 
+    fun generateThumbnailsForProject(projectName: String) {
+        logger.info { "generating thumbnails for project $projectName" }
+
+        val allFolders = File(convertedPath).listFiles()!!.filter { it.isDirectory }
+        val folderName = allFolders.find { it.nameWithoutExtension == projectName.sanitize() }?.nameWithoutExtension
+
+        val nameRef = folderName?.sanitize()
+
+        if(nameRef == null) {
+            logger.warn { "sanitized folder name appears to be null for $projectName" }
+        }
+
+        val outputFolder = File("thumbnails/$nameRef")
+        outputFolder.mkdirs()
+
+        val mediaFolder = File("$convertedPath/$nameRef").also { println("ajo $it") }
+        val files = mediaFolder.listFiles().filter { it.isFile && (it.isImageFile || it.isVideoFile) }
+
+        for(file in files) {
+            generateThumbnails(nameRef!!, file.name)
+        }
+    }
+
     fun getConvertedImage(folderName: String, imageName: String): File? {
         val targetFolder = File("$convertedPath/$folderName")
 
@@ -76,6 +100,18 @@ class MediaService() {
         return if (reencoded.exists()) {
             reencoded
         } else null
+    }
+
+    fun getThumbnail(folderName: String, imageName: String, index: Int): File? {
+        val targetFolder = File("thumbnails/$folderName")
+
+        if (!targetFolder.exists()) {
+            targetFolder.mkdir()
+        }
+
+        val thumbnails = generateThumbnails(folderName, imageName)
+
+        return thumbnails[index]
     }
 
     fun loadMediaInfo(folderName: String): MediaItems {
@@ -109,7 +145,6 @@ class MediaService() {
     }
 
     fun updateMediaInfo(folderName: String, fileName: String) {
-
         logger.info { "updating media info for $folderName with $fileName" }
 
         val mediaInfoFile = File("converted/$folderName/${folderName.sanitize()}.json")

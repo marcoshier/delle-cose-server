@@ -48,7 +48,9 @@ class DataService: KoinComponent {
         }
 
         val newData = fetchAndSerialize()
+
         reencodeMedia(newData)
+        generateThumbnails(newData)
         loadMediaInfo(newData)
 
         return newData
@@ -192,6 +194,12 @@ class DataService: KoinComponent {
     private fun reencodeMedia(data: Data) {
         for (project in data.projects) {
             mediaService.reencodeAllMediaForProject(project.name)
+        }
+    }
+
+    private fun generateThumbnails(data: Data) {
+        for (project in data.projects) {
+            mediaService.generateThumbnailsForProject(project.name)
         }
     }
 

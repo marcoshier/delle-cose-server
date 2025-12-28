@@ -24,8 +24,11 @@ class MediaProcessingService : KoinComponent {
             try {
                 logger.info { "Starting media processing for: $projectName" }
 
-                mediaService.reencodeAllMediaForProject(projectName)
-                mediaService.loadMediaInfo(projectName.sanitize())
+                mediaService.run {
+                    reencodeAllMediaForProject(projectName)
+                    generateThumbnailsForProject(projectName)
+                    loadMediaInfo(projectName.sanitize())
+                }
 
                 logger.info { "Completed media processing for: $projectName" }
             } catch (e: CancellationException) {

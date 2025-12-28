@@ -53,12 +53,14 @@ suspend fun RoutingContext.mediaManifest(folderPath: String) {
 
         val images = mediaFiles.filter { it.type == "image" }
         val videos = mediaFiles.filter { it.type == "video" }
+        val thumbnails = getThumbnails(images, videos)
 
         val response = MediaFolderResponse(
             folder = folder.name,
             totalFiles = mediaFiles.size,
             images = images,
-            videos = videos
+            videos = videos,
+            thumbnails = thumbnails
         )
 
         call.respond(HttpStatusCode.OK, response)

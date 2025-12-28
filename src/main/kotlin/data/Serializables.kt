@@ -76,5 +76,6 @@ data class MediaFolderResponse(
     val folder: String,
     val totalFiles: Int,
     val images: List<MediaFile>,
-    val videos: List<MediaFile>
+    val videos: List<MediaFile>,
+    val thumbnails: List<MediaFile>
 )
