@@ -33,7 +33,6 @@ fun Route.apiRoutes() {
         call.respond(dataService.authors)
     }
 
-
     get("/api/project/{query}") {
         val query = call.parameters["query"]
         val project = query?.let { dataService.getProject(query) }
@@ -115,7 +114,6 @@ fun Route.apiRoutes() {
     }
 
     get("/api/thumbnail/{folderName}/{fileName}") {
-
         val folderName = call.parameters["folderName"]?.let {
             URLDecoder.decode(it, StandardCharsets.UTF_8)
         } ?: return@get call.respond(HttpStatusCode.BadRequest)
@@ -124,12 +122,20 @@ fun Route.apiRoutes() {
             URLDecoder.decode(it, StandardCharsets.UTF_8)
         } ?: return@get call.respond(HttpStatusCode.BadRequest)
 
-        val fileIndex = fileName
-            .substringAfterLast("-")
-            .substringBefore(".")
-            .toIntOrNull() ?: 0
 
-        val thumbnailImage = mediaService.getThumbnail(folderName, fileName, fileIndex)
+        val ogFileName = if (fileName.contains("-128-")) {
+            fileName.substringBeforeLast("-128-") + fileName.substringAfterLast(".")
+        } else {
+            fileName.substringBeforeLast("-128") + fileName.substringAfterLast("-128").substringAfter(".")
+        }
+
+        val fileIndex = if (fileName.contains("-128-")) {
+            fileName.substringAfter("-128-").substringBefore(".").toIntOrNull() ?: 0
+        } else {
+            0
+        }
+
+        val thumbnailImage = mediaService.getThumbnail(folderName, ogFileName, fileIndex)
 
         if (thumbnailImage != null && thumbnailImage.exists()) {
             image(thumbnailImage.path)
