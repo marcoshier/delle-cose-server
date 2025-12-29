@@ -7,9 +7,8 @@ fun getThumbnails(images: List<MediaFile>, videos: List<MediaFile>): List<MediaF
 
     for (image in images) {
         val path = image.path
-        val baseNameWithoutExt = path.substringBeforeLast('.')
-        val thumbnailPath = "$baseNameWithoutExt-128.png"
-            .replace("converted", "thumbnails")
+        val thumbnailPath = path
+            .replace("converted", "thumbnails") + "-128.png"
 
         result.add(
             MediaFile(
@@ -21,11 +20,10 @@ fun getThumbnails(images: List<MediaFile>, videos: List<MediaFile>): List<MediaF
 
     for(video in videos) {
         val path = video.path
-        val baseNameWithoutExt = path.substringBeforeLast('.')
 
         for(i in 0 until 10) {
-            val thumbnailPath = "$baseNameWithoutExt-128-$i.png"
-                .replace("converted", "thumbnails")
+            val thumbnailPath = path
+                .replace("converted", "thumbnails") + "-128-$i.png"
 
             result.add(
                 MediaFile(
