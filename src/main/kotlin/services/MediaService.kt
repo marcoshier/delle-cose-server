@@ -66,7 +66,7 @@ class MediaService() {
         val outputFolder = File("thumbnails/$nameRef")
         outputFolder.mkdirs()
 
-        val mediaFolder = File("$convertedPath/$nameRef").also { println("ajo $it") }
+        val mediaFolder = File("$convertedPath/$nameRef")
         val files = mediaFolder.listFiles().filter { it.isFile && (it.isImageFile || it.isVideoFile) }
 
         for(file in files) {
