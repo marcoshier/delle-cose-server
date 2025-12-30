@@ -6,18 +6,22 @@ import com.marcoshier.data.GoogleSheetsService
 import com.marcoshier.data.LocalService
 import com.marcoshier.routes.routes
 import com.marcoshier.services.AuthService
+import com.marcoshier.services.MediaLookupService
 import com.marcoshier.services.MediaProcessingService
 import com.marcoshier.services.MediaService
 import com.marcoshier.services.RefreshService
+import io.ktor.http.HttpMethod
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.plugins.cors.routing.CORS
 import io.ktor.server.sessions.Sessions
 import io.ktor.server.sessions.cookie
 import org.koin.dsl.module
 import org.koin.ktor.ext.getKoin
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
+import java.net.http.HttpHeaders
 
 val isProduction = System.getenv("prod") != null
 
@@ -40,6 +44,12 @@ fun Application.module() {
         }
     }
 
+    install(CORS) {
+        if(!isProduction) {
+            anyHost()
+            allowCredentials = true
+        }
+    }
 
     install(Koin) {
         slf4jLogger()
@@ -48,6 +58,7 @@ fun Application.module() {
                 single { DataService() }
                 single { MediaService() }
                 single { MediaProcessingService() }
+                single { MediaLookupService() }
             },
             module {
                 single { GoogleSheetsService() }

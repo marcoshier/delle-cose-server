@@ -5,6 +5,7 @@ import com.marcoshier.lib.findMatch
 import com.marcoshier.media.image
 import com.marcoshier.media.mediaManifest
 import com.marcoshier.media.streamVideo
+import com.marcoshier.services.MediaLookupService
 import com.marcoshier.services.MediaService
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.response.respond
@@ -19,7 +20,7 @@ import java.nio.charset.StandardCharsets
 
 fun Route.apiRoutes() {
     val dataService = application.getKoin().get<DataService>()
-    val mediaService = application.getKoin().get<MediaService>()
+    val mediaLookupService = application.getKoin().get<MediaLookupService>()
 
     get("/api/projects") {
         call.respond(dataService.projects)
@@ -56,7 +57,7 @@ fun Route.apiRoutes() {
     }
 
 
-    val mediaFolders = File("media/").listFiles().filter { it.isDirectory }
+    val convertedFolders = File("converted/").listFiles().filter { it.isDirectory }
 
     get("/api/media/{query}") {
         val projectName = call.parameters["query"]
@@ -65,14 +66,14 @@ fun Route.apiRoutes() {
         if (project == null) {
             call.respond("Non ho trovato una cartella media con nome simile a $projectName")
         } else {
-            val dirName = findMatch(mediaFolders.map { it.nameWithoutExtension }, project.name)
+            val dirName = findMatch(convertedFolders.map { it.nameWithoutExtension }, project.name)
 
             if (dirName == null) {
                 call.respond("Cartella foto non trovata con nome simile a ${project.name}")
                 return@get
             }
 
-            mediaManifest("/media/$dirName")
+            mediaManifest("/converted/$dirName")
         }
     }
 
@@ -85,7 +86,7 @@ fun Route.apiRoutes() {
             URLDecoder.decode(it, StandardCharsets.UTF_8)
         } ?: return@get call.respond(HttpStatusCode.BadRequest)
 
-        val convertedVideo = mediaService.getConvertedVideo(folderName, fileName)
+        val convertedVideo = mediaLookupService.getConvertedMedia(folderName, fileName)
 
         if (convertedVideo != null && convertedVideo.exists()) {
             streamVideo(convertedVideo.path)
@@ -104,7 +105,7 @@ fun Route.apiRoutes() {
             URLDecoder.decode(it, StandardCharsets.UTF_8)
         } ?: return@get call.respond(HttpStatusCode.BadRequest)
 
-        val convertedImage = mediaService.getConvertedImage(folderName, fileName)
+        val convertedImage = mediaLookupService.getConvertedMedia(folderName, fileName)
 
         if (convertedImage != null && convertedImage.exists()) {
             image(convertedImage.path)
@@ -122,20 +123,7 @@ fun Route.apiRoutes() {
             URLDecoder.decode(it, StandardCharsets.UTF_8)
         } ?: return@get call.respond(HttpStatusCode.BadRequest)
 
-
-        val ogFileName = if (fileName.contains("-128-")) {
-            fileName.substringBeforeLast("-128-") + fileName.substringAfterLast(".")
-        } else {
-            fileName.substringBeforeLast("-128") + fileName.substringAfterLast("-128").substringAfter(".")
-        }
-
-        val fileIndex = if (fileName.contains("-128-")) {
-            fileName.substringAfter("-128-").substringBefore(".").toIntOrNull() ?: 0
-        } else {
-            0
-        }
-
-        val thumbnailImage = mediaService.getThumbnail(folderName, ogFileName, fileIndex)
+        val thumbnailImage = mediaLookupService.getThumbnail(folderName, fileName)
 
         if (thumbnailImage != null && thumbnailImage.exists()) {
             image(thumbnailImage.path)

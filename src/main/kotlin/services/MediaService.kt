@@ -24,6 +24,7 @@ class MediaService() {
 
     var fullSizePath = "media"
     var convertedPath = "converted"
+    var thumbnailsPath = "thumbnails"
 
     fun reencodeAllMediaForProject(projectName: String) {
         val allFolders = File(fullSizePath).listFiles()!!.filter { it.isDirectory }
@@ -52,8 +53,6 @@ class MediaService() {
     }
 
     fun generateThumbnailsForProject(projectName: String) {
-        logger.info { "generating thumbnails for project $projectName" }
-
         val allFolders = File(convertedPath).listFiles()!!.filter { it.isDirectory }
         val folderName = allFolders.find { it.nameWithoutExtension == projectName.sanitize() }?.nameWithoutExtension
 
@@ -63,7 +62,7 @@ class MediaService() {
             logger.warn { "sanitized folder name appears to be null for $projectName" }
         }
 
-        val outputFolder = File("thumbnails/$nameRef")
+        val outputFolder = File("$thumbnailsPath/$nameRef")
         outputFolder.mkdirs()
 
         val mediaFolder = File("$convertedPath/$nameRef")
@@ -100,18 +99,6 @@ class MediaService() {
         return if (reencoded.exists()) {
             reencoded
         } else null
-    }
-
-    fun getThumbnail(folderName: String, imageName: String, index: Int): File? {
-        val targetFolder = File("thumbnails/$folderName")
-
-        if (!targetFolder.exists()) {
-            targetFolder.mkdir()
-        }
-
-        val thumbnails = generateThumbnails(folderName, imageName)
-
-        return thumbnails[index]
     }
 
     fun loadMediaInfo(folderName: String): MediaItems {

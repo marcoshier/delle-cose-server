@@ -20,6 +20,7 @@ fun getThumbnails(images: List<MediaFile>, videos: List<MediaFile>): List<MediaF
 
     for(video in videos) {
         val path = video.path
+        println("from manifest $path")
 
         for(i in 0 until 10) {
             val thumbnailPath = path

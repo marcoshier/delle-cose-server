@@ -19,8 +19,9 @@ fun generateThumbnails(folderName: String, mediaName: String): List<File> {
         val thumbnailPath = "thumbnails/$folderName/$mediaName-128.png"
         val outputFile = File(thumbnailPath)
 
+        println("full path: $thumbnailPath")
+
         if (outputFile.exists()) {
-            logger.info { "thumbnail already exists, skipping" }
             return listOf(outputFile)
         }
 
