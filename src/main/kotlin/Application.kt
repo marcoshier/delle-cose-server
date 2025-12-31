@@ -41,20 +41,17 @@ fun Application.module() {
             cookie.maxAgeInSeconds = 4 * 3600
             cookie.httpOnly = true
             cookie.secure = isProduction
+
+            if (isProduction) {
+                cookie.extensions["SameSite"] = "None"
+            }
         }
     }
 
     install(CORS) {
-        if (isProduction) {
-            allowHost(
-                host = "dellecose-frontend.netlify.app",
-                schemes = listOf("https")
-            )
-        } else {
-            anyHost()
-        }
+        anyHost()
 
-        allowCredentials = true
+        allowCredentials = false
 
         allowMethod(HttpMethod.Options)
         allowMethod(HttpMethod.Get)
