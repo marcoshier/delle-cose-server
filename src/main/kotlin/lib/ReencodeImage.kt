@@ -11,7 +11,6 @@ fun reencodeImage(folderName: String, imageName: String, maxHeight: Int): File {
     val outputFile = File(convertedPath)
 
     if (outputFile.exists()) {
-        logger.info { "image already exist, skipping resize" }
         return outputFile
     }
 

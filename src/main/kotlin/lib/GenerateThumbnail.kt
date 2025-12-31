@@ -8,12 +8,11 @@ private val logger = KotlinLogging.logger {  }
 
 fun generateThumbnails(folderName: String, mediaName: String): List<File> {
     val inputFile = File("converted/$folderName/$mediaName")
+
     if (!inputFile.exists()) {
         logger.error { "Input file does not exist: ${inputFile.absolutePath}" }
         return emptyList()
     }
-
-    logger.info { "generating thumbnail for ${inputFile.path}" }
 
     if (inputFile.isImageFile) {
         val thumbnailPath = "thumbnails/$folderName/$mediaName-128.png"
@@ -59,7 +58,6 @@ fun generateThumbnails(folderName: String, mediaName: String): List<File> {
             val outputFile = File(thumbnailPath)
 
             if (outputFile.exists()) {
-                logger.info { "thumbnail $i already exists, skipping" }
                 outputFiles.add(outputFile)
                 continue
             }

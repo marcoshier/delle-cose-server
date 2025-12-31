@@ -12,7 +12,6 @@ fun reencodeVideo(folderName: String, videoName: String, maxHeight: Int): File {
     val outputFile = File(convertedPath)
 
     if (outputFile.exists()) {
-        logger.info { "video already exist, skipping resize" }
         return outputFile
     }
 

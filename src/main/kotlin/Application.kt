@@ -47,7 +47,7 @@ fun Application.module() {
     install(CORS) {
         if (isProduction) {
             allowHost(
-                host = "dellecose-frontend.netlify.app/",
+                host = "dellecose-frontend.netlify.app",
                 schemes = listOf("https")
             )
         } else {
