@@ -21,7 +21,7 @@ import org.koin.dsl.module
 import org.koin.ktor.ext.getKoin
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
-import java.net.http.HttpHeaders
+import io.ktor.http.HttpHeaders
 
 val isProduction = System.getenv("prod") != null
 
@@ -45,10 +45,26 @@ fun Application.module() {
     }
 
     install(CORS) {
-        if(!isProduction) {
+        if (isProduction) {
+            allowHost(
+                host = "dellecose-frontend.netlify.app/",
+                schemes = listOf("https")
+            )
+        } else {
             anyHost()
-            allowCredentials = true
         }
+
+        allowCredentials = true
+
+        allowMethod(HttpMethod.Options)
+        allowMethod(HttpMethod.Get)
+        allowMethod(HttpMethod.Post)
+        allowMethod(HttpMethod.Put)
+        allowMethod(HttpMethod.Delete)
+        allowMethod(HttpMethod.Patch)
+
+        allowHeader(HttpHeaders.ContentType)
+        allowHeader(HttpHeaders.Authorization)
     }
 
     install(Koin) {
