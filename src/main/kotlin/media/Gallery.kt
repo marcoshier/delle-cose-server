@@ -3,6 +3,7 @@ package com.marcoshier.media
 import com.marcoshier.components.galleryComponent
 import com.marcoshier.components.mediaComponent
 import com.marcoshier.components.noMediaComponent
+import com.marcoshier.lib.convertedNameOf
 import com.marcoshier.lib.isImageFile
 import com.marcoshier.lib.isVideoFile
 import com.marcoshier.pages.errorPage
@@ -46,12 +47,7 @@ suspend fun RoutingContext.gallery(projectName: String, folderPath: String, phot
         }.sortedByDescending { it.second.updatedAt }
 
         val mediaComponents = sortedMediaItems.joinToString("\n") { (filename, mediaInfoItem) ->
-            val isVideo = filename.substringAfterLast('.', "").lowercase() in
-                    setOf("mp4", "mov", "avi", "mkv")
-
-            val convertedName = if (isVideo) "${filename.substringBeforeLast('.')}.mp4" else filename
-
-            val convertedFile = File("converted/${folder.name}/$convertedName")
+            val convertedFile = File("converted/${folder.name}/${convertedNameOf(filename)}")
 
             if (!convertedFile.exists()) {
                 logger.info { "converted file not found: ${convertedFile.path}" }

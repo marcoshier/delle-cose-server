@@ -31,6 +31,11 @@ fun reencodeVideo(
         else "thirdparty/ffmpeg/ffmpeg-7.1-essentials_build/ffmpeg.exe",
         "-y", "-i", inputFile.absolutePath,
         "-vf", "scale=-2:$maxHeight",
+        "-c:v", "libx264",
+        "-preset", "veryfast",
+        "-crf", "24",
+        "-c:a", "aac",
+        "-b:a", "128k",
         "-progress", "pipe:1",
         outputFile.absolutePath
     ).redirectErrorStream(true).start()

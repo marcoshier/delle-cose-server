@@ -3,8 +3,10 @@ package com.marcoshier.services
 import com.marcoshier.data.MediaItem
 import com.marcoshier.data.MediaItems
 import com.marcoshier.lib.ConversionControl
+import com.marcoshier.lib.convertedNameOf
 import com.marcoshier.lib.generateThumbnails
 import com.marcoshier.lib.isImageFile
+import com.marcoshier.lib.isVideoExtension
 import com.marcoshier.lib.isVideoFile
 import com.marcoshier.lib.reencodeImage
 import com.marcoshier.lib.reencodeVideo
@@ -295,6 +297,9 @@ class MediaService : KoinComponent {
         try {
             logger.info { "Attempting to delete $filename from $folderName" }
 
+            val isVideo = isVideoExtension(filename)
+            val convertedName = convertedNameOf(filename)
+
             val originalFile = File("media/$folderName/$filename")
             val originalDeleted = if (originalFile.exists()) {
                 originalFile.delete()
@@ -303,22 +308,25 @@ class MediaService : KoinComponent {
                 false
             }
 
-            val convertedFile = File("converted/$folderName/$filename")
-            if (convertedFile.exists()) {
-                convertedFile.delete()
+            val convertedFile = File("converted/$folderName/$convertedName")
+            if (convertedFile.exists() && !convertedFile.delete()) {
+                logger.warn { "Failed to delete converted: ${convertedFile.absolutePath}" }
+            }
+
+            val thumbsFolder = File("thumbnails/$folderName")
+            if (isVideo) {
+                for (i in 0 until 10) {
+                    File(thumbsFolder, "$convertedName-128-$i.png").takeIf { it.exists() }?.delete()
+                }
             } else {
-                logger.info { "Converted file not found (ok): ${convertedFile.absolutePath}" }
-                true
+                File(thumbsFolder, "$convertedName-128.png").takeIf { it.exists() }?.delete()
             }
 
             val mediaInfoUpdated = removeFromMediaInfo(folderName, filename)
 
             return if (originalDeleted && mediaInfoUpdated) {
                 logger.info { "Successfully deleted $filename from $folderName" }
-                mapOf(
-                    "success" to "true",
-                    "message" to "File deleted successfully"
-                )
+                mapOf("success" to "true", "message" to "File deleted successfully")
             } else {
                 logger.error { "Failed to delete $filename - original: $originalDeleted, info: $mediaInfoUpdated" }
                 mapOf(
@@ -327,7 +335,6 @@ class MediaService : KoinComponent {
                     "error" to "Some files or metadata could not be removed"
                 )
             }
-
         } catch (e: Exception) {
             logger.error(e) { "Error deleting $filename from $folderName" }
             return mapOf(
@@ -365,8 +372,7 @@ class MediaService : KoinComponent {
         }
     }
 
-    private fun convertedName(file: File): String =
-        if (file.isVideoFile) "${file.nameWithoutExtension}.mp4" else file.name
+    private fun convertedName(file: File): String = convertedNameOf(file.name)
 
 
 }

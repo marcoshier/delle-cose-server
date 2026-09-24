@@ -79,6 +79,9 @@ fun RoutingContext.galleryComponent(
         .pf-failed .pf-stage { color: #c0392b; }
         .pf-cancelled .pf-fill { background: #999; }
         .pf-cancelled .pf-stage { color: #999; }
+       
+        .pf-uploading .pf-fill { background: #777; }
+        .pf-uploading .pf-stage { color: #777; }
         
         .cancel-btn {
             background: white;
@@ -118,16 +121,17 @@ fun RoutingContext.galleryComponent(
                 
                 ${
                     if (isAuthenticated) """
-                        <div class="processing-status" id="processingStatus" style="display: none;">
+                       <div class="processing-status" id="processingStatus" style="display: none;">
                             <div class="processing-header">
-                                <span id="processingText">Processing…</span>
+                                <span id="processingText">Working…</span>
                                 <span class="processing-right">
                                     <span class="processing-overall" id="processingOverall">0%</span>
-                                    <button class="cancel-btn" id="cancelBtn" type="button">Cancel</button>
+                                    <button class="cancel-btn" id="cancelBtn" type="button" style="display:none;">Cancel</button>
                                 </span>
                             </div>
+                            <div id="uploadFiles"></div>
                             <div id="processingFiles"></div>
-                        </div>
+                       </div>
                     """ else ""
                 }
                 
@@ -144,12 +148,6 @@ fun RoutingContext.galleryComponent(
                                 <button type="button" class="upload-btn" onclick="document.getElementById('fileInput').click()">
                                     Upload
                                 </button>
-                                <div class="upload-progress" id="uploadProgress">
-                                    <div class="progress-bar">
-                                        <div class="progress-fill" id="progressFill"></div>
-                                    </div>
-                                    <div class="upload-status" id="uploadStatus"></div>
-                                </div>
                             </div>
                         """ else ""
                     }
