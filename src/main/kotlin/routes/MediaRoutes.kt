@@ -42,9 +42,8 @@ fun Route.mediaRoutes() {
     val mediaProcessingService = application.getKoin().get<MediaProcessingService>()
     val mediaProgressService = application.getKoin().get<MediaProgressService>()
 
-    val mediaFolders = File("media/").listFiles().filter { it.isDirectory }
-
     get("/media/{query}") {
+        val mediaFolders = File("media/").listFiles()?.filter { it.isDirectory } ?: emptyList()
         val projectName = call.parameters["query"]
         val project = projectName?.let { dataService.getProject(projectName) }
 

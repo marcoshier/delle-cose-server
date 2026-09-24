@@ -57,9 +57,8 @@ fun Route.apiRoutes() {
     }
 
 
-    val convertedFolders = File("converted/").listFiles().filter { it.isDirectory }
-
     get("/api/media/{query}") {
+        val convertedFolders = File("converted/").listFiles()?.filter { it.isDirectory } ?: emptyList()
         val projectName = call.parameters["query"]
         val project = projectName?.let { dataService.getProject(projectName) }
 
