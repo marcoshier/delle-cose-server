@@ -8,6 +8,7 @@ import com.marcoshier.routes.routes
 import com.marcoshier.services.AuthService
 import com.marcoshier.services.MediaLookupService
 import com.marcoshier.services.MediaProcessingService
+import com.marcoshier.services.MediaProgressService
 import com.marcoshier.services.MediaService
 import com.marcoshier.services.RefreshService
 import io.ktor.http.HttpMethod
@@ -71,6 +72,7 @@ fun Application.module() {
                 single { DataService() }
                 single { MediaService() }
                 single { MediaProcessingService() }
+                single { MediaProgressService() }
                 single { MediaLookupService() }
             },
             module {

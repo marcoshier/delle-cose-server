@@ -3,8 +3,7 @@ package com.marcoshier.styles
 import org.intellij.lang.annotations.Language
 
 @Language("CSS")
-val stylesCss = """
-    <style>
+val globalStyles = """
         body {
             font-family: monospace;
             margin: 0;
@@ -158,5 +157,4 @@ val stylesCss = """
             opacity: 0.5;
             pointer-events: none;
         }
-    </style>
 """.trimIndent()

@@ -29,7 +29,7 @@ fun Application.routes() {
 
         get("/update") {
             try {
-                dataService.updateWithMedia()
+                dataService.update()
                 call.respond("Aggiornato alle ${LocalDateTime.now()}")
             } catch (e: Throwable) {
                 call.respond("")

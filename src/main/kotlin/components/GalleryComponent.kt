@@ -2,12 +2,13 @@ package com.marcoshier.components
 
 import com.marcoshier.auth.UserSession
 import com.marcoshier.services.AuthService
-import com.marcoshier.styles.stylesCss
+import com.marcoshier.styles.globalStyles
 import io.ktor.server.routing.RoutingContext
 import io.ktor.server.sessions.get
 import io.ktor.server.sessions.sessions
+import org.intellij.lang.annotations.Language
 import org.koin.ktor.ext.getKoin
-import uploadScript
+import scripts.uploadScript
 import java.io.File
 
 fun RoutingContext.galleryComponent(
@@ -22,46 +23,88 @@ fun RoutingContext.galleryComponent(
 
     val isAuthenticated = session != null && authService.isSessionAuthenticated(session.sessionId)
 
-    return """
+    @Language("css")
+    val localStyles = """
+        .processing-status {
+            background: white;
+            border: 1px solid black;
+            border-radius: 1px;
+            padding: 15px;
+            margin-bottom: 30px;
+        }
+        .processing-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            font-size: 16px;
+        }
+        .processing-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .processing-overall { font-variant-numeric: tabular-nums; }
+        .pf-row {
+            display: grid;
+            grid-template-columns: 1fr 110px 160px 48px;
+            gap: 12px;
+            align-items: center;
+            padding: 5px 0;
+            font-size: 13px;
+        }
+        .pf-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .pf-stage { color: #888; text-align: right; }
+        .pf-bar {
+            height: 10px;
+            border: 1px solid black;
+            background: white;
+            overflow: hidden;
+        }
+        .pf-fill {
+            height: 100%;
+            width: 0%;
+            background: black;
+            transition: width 0.4s ease;
+        }
+        
+        .pf-pct { text-align: right; font-variant-numeric: tabular-nums; }
+        .pf-done .pf-stage { color: black; }
+        .pf-queued .pf-stage { color: #aaa; }
+        .pf-failed .pf-fill { background: #c0392b; }
+        .pf-failed .pf-stage { color: #c0392b; }
+        .pf-cancelled .pf-fill { background: #999; }
+        .pf-cancelled .pf-stage { color: #999; }
+        
+        .cancel-btn {
+            background: white;
+            color: black;
+            border: 1px solid black;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-family: monospace;
+            font-size: 13px;
+            margin: 0;
+        }
+        .cancel-btn:hover { background: black; color: white; }
+        .cancel-btn:disabled { opacity: 0.5; cursor: default; }
+        .cancel-btn:disabled:hover { background: white; color: black; }
+        
+    """.trimIndent()
+
+    @Language("html")
+    val page = """
         <!DOCTYPE html>
-        <html>
         <head>
             <title>Gallery - ${projectName}</title>
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            $stylesCss
             <style>
-                .processing-status {
-                    background: #fff3cd;
-                    border: 1px solid #ffeaa7;
-                    border-radius: 4px;
-                    padding: 12px;
-                    margin: 10px 0;
-                }
-                .processing-indicator {
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                }
-                .processing-spinner {
-                    animation: spin 1s linear infinite;
-                    font-size: 16px;
-                }
-                @keyframes spin {
-                    from { transform: rotate(0deg); }
-                    to { transform: rotate(360deg); }
-                }
-                .cancel-btn {
-                    background: #dc3545;
-                    color: white;
-                    border: none;
-                    padding: 4px 8px;
-                    border-radius: 3px;
-                    cursor: pointer;
-                    font-size: 12px;
-                }
-                .cancel-btn:hover {
-                    background: #c82333;
-                }
+                $globalStyles
+                $localStyles
             </style>
         </head>
         <body>
@@ -69,23 +112,24 @@ fun RoutingContext.galleryComponent(
             
                 <div class="header">
                     <h1>media / ${projectName}</h1>
-                     ${if (!isAuthenticated)
-        """<a href="/login" class="login-link">login</a>""" else
-        """<a href="/logout" class="login-link">logout</a>"""
-    }
+                     ${if (!isAuthenticated) """<a href="/login" class="login-link">login</a>""" 
+                       else """<a href="/logout" class="login-link">logout</a>"""}
                 </div>
                 
-                ${if (isAuthenticated) """
-                    <div class="processing-status" id="processingStatus" style="display: none;">
-                        <div class="processing-indicator">
-                            <span class="processing-spinner">⟳</span>
-                            <span id="processingText">Processing media...</span>
-                            <button class="cancel-btn" id="cancelBtn" onclick="cancelProcessing('${projectName}')">
-                                Cancel
-                            </button>
+                ${
+                    if (isAuthenticated) """
+                        <div class="processing-status" id="processingStatus" style="display: none;">
+                            <div class="processing-header">
+                                <span id="processingText">Processing…</span>
+                                <span class="processing-right">
+                                    <span class="processing-overall" id="processingOverall">0%</span>
+                                    <button class="cancel-btn" id="cancelBtn" type="button">Cancel</button>
+                                </span>
+                            </div>
+                            <div id="processingFiles"></div>
                         </div>
-                    </div>
-                """ else ""}
+                    """ else ""
+                }
                 
                 <div class="stats">
                     <div class="stats-item">
@@ -93,33 +137,34 @@ fun RoutingContext.galleryComponent(
                         (<strong>Immagini:</strong> $imageCount, <strong>Video:</strong> $videoCount)
                     </div>
                     
-                    ${if (isAuthenticated) """
-                        <div class="upload-container stats-item" id="uploadContainer">
-                            <input type="file" id="fileInput" class="file-input" multiple accept="image/*,video/*">
-                            <button type="button" class="upload-btn" onclick="document.getElementById('fileInput').click()">
-                                Upload
-                            </button>
-                            <div class="upload-progress" id="uploadProgress">
-                                <div class="progress-bar">
-                                    <div class="progress-fill" id="progressFill"></div>
+                    ${
+                        if (isAuthenticated) """
+                            <div class="upload-container stats-item" id="uploadContainer">
+                                <input type="file" id="fileInput" class="file-input" multiple accept="image/*,video/*">
+                                <button type="button" class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                                    Upload
+                                </button>
+                                <div class="upload-progress" id="uploadProgress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="progressFill"></div>
+                                    </div>
+                                    <div class="upload-status" id="uploadStatus"></div>
                                 </div>
-                                <div class="upload-status" id="uploadStatus"></div>
                             </div>
-                        </div>
-                    """ else ""}
+                        """ else ""
+                    }
                 </div>
                 
                 $mediaComponents
                 
-                ${if (isAuthenticated) {
-        uploadScript(projectName)
-    } else ""
-    }
+                ${if (isAuthenticated) { uploadScript(projectName) } else ""}
                 
             </div>
         </body>
         </html>
     """.trimIndent()
+
+    return page
 }
 
 

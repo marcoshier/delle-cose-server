@@ -6,11 +6,17 @@ import io.ktor.server.application.*
 import java.io.File
 
 private val logger = KotlinLogging.logger {  }
-fun reencodeImage(folderName: String, imageName: String, maxHeight: Int): File {
+
+fun reencodeImage(
+    folderName: String, imageName: String, maxHeight: Int,
+    onProgress: ((Int) -> Unit)? = null,
+    control: ConversionControl? = null
+): File {
     val convertedPath = "converted/$folderName/$imageName"
     val outputFile = File(convertedPath)
 
     if (outputFile.exists()) {
+        onProgress?.invoke(100)
         return outputFile
     }
 
@@ -22,7 +28,7 @@ fun reencodeImage(folderName: String, imageName: String, maxHeight: Int): File {
         return outputFile
     }
 
-    val retVal = ProcessBuilder(
+    val process = ProcessBuilder(
         if (isProduction) {
             "convert"
         } else {
@@ -33,13 +39,20 @@ fun reencodeImage(folderName: String, imageName: String, maxHeight: Int): File {
         "x$maxHeight",
         outputFile.absolutePath
     ).redirectError(File("magick.error.txt"))
-        .start().waitFor()
+        .start()
+
+    control?.attach(process)
+    val retVal = process.waitFor()
+    control?.detach(process)
+
+    if (control?.isCancelled == true) {
+        outputFile.delete()
+        return outputFile
+    }
 
     if (retVal != 0) {
         logger.warn { "conversion failed (${inputFile.path} -> ${outputFile.path} $maxHeight) $retVal" }
-    } else {
-        logger.info { "done reencoding" }
-    }
+    } else onProgress?.invoke(100)
 
     return outputFile
 }

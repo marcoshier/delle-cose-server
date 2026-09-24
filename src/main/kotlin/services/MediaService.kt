@@ -2,6 +2,7 @@ package com.marcoshier.services
 
 import com.marcoshier.data.MediaItem
 import com.marcoshier.data.MediaItems
+import com.marcoshier.lib.ConversionControl
 import com.marcoshier.lib.generateThumbnails
 import com.marcoshier.lib.isImageFile
 import com.marcoshier.lib.isVideoFile
@@ -16,49 +17,78 @@ import io.ktor.http.content.forEachPart
 import io.ktor.utils.io.jvm.javaio.copyTo
 import kotlinx.datetime.Clock
 import kotlinx.serialization.json.Json
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import java.io.File
 
 private val logger = KotlinLogging.logger {  }
 
-class MediaService() {
+data class UploadResult(
+    val response: Map<String, String>,
+    val folder: String?,
+    val batch: Set<String>
+)
+
+class MediaService : KoinComponent {
+    private val progress by inject<MediaProgressService>()
 
     var fullSizePath = "media"
     var convertedPath = "converted"
     var thumbnailsPath = "thumbnails"
 
-    fun reencodeAllMediaForProject(projectName: String) {
+    fun reencodeAllMediaForProject(
+        projectName: String,
+        control: ConversionControl? = null,
+        batch: Set<String>? = null
+    ) {
         val allFolders = File(fullSizePath).listFiles()!!.filter { it.isDirectory }
         val folderName = allFolders.find { it.nameWithoutExtension == projectName.sanitize() }?.nameWithoutExtension
-
         var nameRef = folderName?.sanitize()
-
         if (folderName == null) {
             File("$fullSizePath/${projectName.sanitize()}").mkdirs()
             nameRef = projectName.sanitize()
         }
-
-        val outputFolder = File("$convertedPath/$nameRef")
-        outputFolder.mkdirs()
+        File("$convertedPath/$nameRef").mkdirs()
 
         val mediaFolder = File("$fullSizePath/$nameRef")
-        val files = mediaFolder.listFiles().filter { it.isFile }
+        val files = mediaFolder.listFiles()?.filter { it.isFile } ?: emptyList()
+
+        val tracked = files.filter { it.isImageFile || it.isVideoFile }
+        progress.start(
+            projectName,
+            tracked.map {
+                val cn = convertedName(it)
+                Triple(cn, if (it.isVideoFile) "video" else "image", batch?.contains(cn) ?: true)
+            }
+        )
 
         for (file in files) {
-            if (file.isVideoFile) {
-                reencodeVideo(nameRef!!, file.name, 1080)
-            } else {
-                reencodeImage(nameRef!!, file.name, 1080)
-            }
+            if (control?.isCancelled == true) break
+            val isVideo = file.isVideoFile
+            val isMedia = isVideo || file.isImageFile
+            val key = convertedName(file)
+
+            if (isMedia) progress.stage(projectName, key, MediaStage.REENCODING)
+
+            val cb: ((Int) -> Unit)? = if (isMedia) {
+                { p: Int -> progress.percent(projectName, key, (p * 0.9).toInt()) }
+            } else null
+
+            val out = if (isVideo) reencodeVideo(nameRef!!, file.name, 1080, cb, control)
+            else reencodeImage(nameRef!!, file.name, 1080, cb, control)
+
+            if (isMedia && control?.isCancelled != true && !out.exists())
+                progress.fail(projectName, key, "conversion failed")
         }
     }
 
-    fun generateThumbnailsForProject(projectName: String) {
+    fun generateThumbnailsForProject(projectName: String, control: ConversionControl? = null) {
         val allFolders = File(convertedPath).listFiles()!!.filter { it.isDirectory }
         val folderName = allFolders.find { it.nameWithoutExtension == projectName.sanitize() }?.nameWithoutExtension
 
         val nameRef = folderName?.sanitize()
 
-        if(nameRef == null) {
+        if (nameRef == null) {
             logger.warn { "sanitized folder name appears to be null for $projectName" }
         }
 
@@ -66,10 +96,14 @@ class MediaService() {
         outputFolder.mkdirs()
 
         val mediaFolder = File("$convertedPath/$nameRef")
-        val files = mediaFolder.listFiles().filter { it.isFile && (it.isImageFile || it.isVideoFile) }
+        val files = mediaFolder.listFiles()?.filter { it.isFile && (it.isImageFile || it.isVideoFile) } ?: emptyList()
 
-        for(file in files) {
+        for (file in files) {
+            if (control?.isCancelled == true) break
+            val key = file.name
+            progress.stage(projectName, key, MediaStage.THUMBNAIL, 90)
             generateThumbnails(nameRef!!, file.name)
+            progress.stage(projectName, key, MediaStage.DONE)
         }
     }
 
@@ -159,13 +193,13 @@ class MediaService() {
         }
     }
 
-    suspend fun upload(multipart: MultiPartData): Map<String, String> {
+    suspend fun upload(multipart: MultiPartData): UploadResult {
         val uploadedFiles = mutableListOf<File>()
+        val batch = mutableSetOf<String>()
+        var folderName: String? = null
+        val successfulUploads = mutableListOf<String>()
 
         try {
-            var folderName: String? = null
-            val successfulUploads = mutableListOf<String>()
-
             multipart.forEachPart { part ->
                 when (part) {
                     is PartData.FormItem -> {
@@ -176,39 +210,32 @@ class MediaService() {
                     }
                     is PartData.FileItem -> {
                         if (part.name == "files") {
-
                             val fileName = part.originalFileName ?: "unknown"
                             val sanitizedFileName = fileName.sanitizeFileName()
-
                             val allowedExtensions = setOf("jpg", "jpeg", "png", "gif", "bmp", "webp", "mp4", "mov", "avi", "mkv")
                             val fileExtension = fileName.substringAfterLast('.', "").lowercase()
 
                             if (fileExtension in allowedExtensions) {
                                 val targetFolder = File("media/${folderName?.sanitize()}")
                                 targetFolder.mkdirs()
-
                                 val targetFile = File(targetFolder, sanitizedFileName)
                                 uploadedFiles.add(targetFile)
 
                                 try {
                                     val tempFile = File(targetFile.parent, "${targetFile.name}.tmp")
-
                                     val channel = part.provider()
-                                    tempFile.outputStream().use { output ->
-                                        channel.copyTo(output)
-                                    }
+                                    tempFile.outputStream().use { output -> channel.copyTo(output) }
 
                                     if (tempFile.renameTo(targetFile)) {
                                         successfulUploads.add(fileName)
+                                        batch.add(convertedName(targetFile))   // <- record converted-name
                                         updateMediaInfo(folderName!!.sanitize(), sanitizedFileName)
-
                                         uploadedFiles.remove(targetFile)
                                         logger.info { "Successfully uploaded: $fileName" }
                                     } else {
                                         logger.error { "Failed to rename temp file for: $fileName" }
                                         tempFile.delete()
                                     }
-
                                 } catch (e: Exception) {
                                     logger.error(e) { "Failed to upload file: $fileName" }
                                 }
@@ -220,32 +247,22 @@ class MediaService() {
                 part.dispose()
             }
 
-            val result = mapOf(
+            val response = mapOf(
                 "success" to "true",
                 "message" to "Uploaded ${successfulUploads.size} files successfully",
                 "files" to successfulUploads.toString()
             )
-            return result
+            return UploadResult(response, folderName, batch)
 
         } catch (e: Exception) {
             logger.error(e) { "Upload interrupted or failed" }
-
-            return mapOf(
-                "error" to "Upload failed: ${e.message}"
-            )
+            return UploadResult(mapOf("error" to "Upload failed: ${e.message}"), folderName, batch)
         } finally {
             uploadedFiles.forEach { file ->
                 try {
-                    if (file.exists()) {
-                        file.delete()
-                        logger.info { "Cleaned up partial upload: ${file.name}" }
-                    }
-
+                    if (file.exists()) { file.delete(); logger.info { "Cleaned up partial upload: ${file.name}" } }
                     val tempFile = File(file.parent, "${file.name}.tmp")
-                    if (tempFile.exists()) {
-                        tempFile.delete()
-                        logger.info { "Cleaned up temp file: ${tempFile.name}" }
-                    }
+                    if (tempFile.exists()) { tempFile.delete(); logger.info { "Cleaned up temp file: ${tempFile.name}" } }
                 } catch (e: Exception) {
                     logger.warn(e) { "Failed to cleanup file: ${file.name}" }
                 }
@@ -347,6 +364,9 @@ class MediaService() {
             false
         }
     }
+
+    private fun convertedName(file: File): String =
+        if (file.isVideoFile) "${file.nameWithoutExtension}.mp4" else file.name
 
 
 }

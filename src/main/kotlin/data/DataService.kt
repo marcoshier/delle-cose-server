@@ -20,7 +20,6 @@ class DataService: KoinComponent {
     private val googleService by inject<GoogleSheetsService>()
     private val localService by inject<LocalService>()
     private val mediaService by inject<MediaService>()
-    private val mediaProcessingService by inject<MediaProcessingService>()
     private val refreshService by inject<RefreshService>()
 
 
@@ -209,22 +208,10 @@ class DataService: KoinComponent {
         }
     }
 
-
     fun update() {
         val newData = fetchAndSerialize()
         data = newData
     }
-
-    fun updateWithMedia() {
-
-        val newData = fetchAndSerialize()
-        data = newData
-
-        for (project in newData.projects) {
-            mediaProcessingService.processMedia(project.name)
-        }
-    }
-
 
 
     var data = init()

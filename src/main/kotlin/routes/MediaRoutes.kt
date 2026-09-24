@@ -8,7 +8,9 @@ import com.marcoshier.media.image
 import com.marcoshier.media.mediaManifest
 import com.marcoshier.media.streamVideo
 import com.marcoshier.services.MediaProcessingService
+import com.marcoshier.services.MediaProgressService
 import com.marcoshier.services.MediaService
+import com.marcoshier.services.ProjectProgress
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.PartData
@@ -29,6 +31,7 @@ import org.koin.ktor.ext.inject
 import java.io.File
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
+import java.time.LocalDateTime
 import kotlin.getValue
 
 private val logger = KotlinLogging.logger {  }
@@ -37,6 +40,7 @@ fun Route.mediaRoutes() {
     val dataService = application.getKoin().get<DataService>()
     val mediaService = application.getKoin().get<MediaService>()
     val mediaProcessingService = application.getKoin().get<MediaProcessingService>()
+    val mediaProgressService = application.getKoin().get<MediaProgressService>()
 
     val mediaFolders = File("media/").listFiles().filter { it.isDirectory }
 
@@ -86,9 +90,12 @@ fun Route.mediaRoutes() {
         requireAuth(call) {
             val multipart = call.receiveMultipart(formFieldLimit = 1024 * 1024 * 500)
             val result = mediaService.upload(multipart)
-            call.respond(result)
+            call.respond(result.response)
 
-            dataService.updateWithMedia()
+            val folder = result.folder
+            if (!folder.isNullOrBlank() && result.batch.isNotEmpty()) {
+                mediaProcessingService.processMedia(folder, result.batch)
+            }
         }
     }
 
@@ -99,18 +106,23 @@ fun Route.mediaRoutes() {
         }
     }
 
-    post("/cancel-processing/{projectName}") {
+    get("/media-processing-status/{projectName}") {
         requireAuth(call) {
-            val projectName = call.parameters["projectName"]
-            if (projectName != null) {
-                val cancelled = mediaProcessingService.cancelProcessing(projectName)
-                call.respond(mapOf(
-                    "success" to cancelled,
-                    "message" to if (cancelled) "Processing cancelled" else "No active processing found"
-                ))
-            } else {
-                call.respond(HttpStatusCode.BadRequest, "Missing project name")
+            val name = call.parameters["projectName"]
+            val snapshot = name?.let { mediaProgressService.snapshot(it) }
+                ?: ProjectProgress(name ?: "", active = false, overallPercent = 0, files = emptyList())
+            call.respond(snapshot)
+        }
+    }
+
+    get("/media/reprocess") {
+        try {
+            for (project in dataService.data.projects) {
+                mediaProcessingService.processMedia(project.name)
             }
+            call.respond("Reprocessing started at ${LocalDateTime.now()}")
+        } catch (e: Throwable) {
+            call.respond(HttpStatusCode.InternalServerError, "")
         }
     }
 
